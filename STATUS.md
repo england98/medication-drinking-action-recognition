@@ -3,7 +3,7 @@
 # Project Status
 
 - 프로젝트: `medication-drinking-action-recognition`
-- 현재 Phase: **Phase 1 — 프로젝트 골격**
+- 현재 Phase: **Phase 2 진입 준비 완료 — Full Candidate Inventory**
 - 최종 업데이트: 2026-08-29
 - 문서 성격: **현재 작업 상태의 Single Source of Truth**
 
@@ -12,7 +12,8 @@
 ## 1. 현재 상태
 
 개발환경, Data Readiness, Git Repository Baseline 구축이 완료되었다.
-현재는 **Full Candidate Inventory 구현 전 최소 프로젝트 골격을 준비하는 Phase 1**이다.
+Phase 1 프로젝트 최소 골격과 안전한 path infrastructure 구축을 완료했다.
+현재는 **Phase 2 Full Candidate Inventory 구현에 진입 가능한 상태**다.
 
 현재 위치:
 
@@ -25,9 +26,9 @@ Repository 정리
 ↓
 Git baseline 검증 / commit
 ↓
-Phase 1 프로젝트 골격       ← 현재
+Phase 1 프로젝트 골격       완료
 ↓
-Full Candidate Inventory
+Full Candidate Inventory    ← 다음
 ```
 
 ---
@@ -156,12 +157,18 @@ Phase 0: COMPLETE
 
 ## 4. 현재 해야 할 작업
 
-Phase 1의 현재 작업:
+Phase 1 완료 항목:
 
-- [ ] `configs/`, `manifests/`, `scripts/`, `src/`, `tests/` 최소 골격 확정
-- [ ] `configs/paths.local.yaml` loader 및 schema validation 구현 범위 확정
-- [ ] Raw input / Working output 분리 안전장치 구현 범위 확정
-- [ ] Phase 2 Full Candidate Inventory 구현을 위한 공통 구조 준비
+- [x] `configs/`, `manifests/`, `scripts/`, `src/`, `tests/` 최소 골격 확정
+- [x] `configs/paths.local.yaml` 공통 loader 및 필수 root 검증 구현
+- [x] canonical path 기준 Raw input / Working output 양방향 분리 안전장치 구현
+- [x] YAML / 필수 key / root 존재 / 경로 분리 unit test 구현 및 통과
+
+현재 해야 할 작업:
+
+- [ ] Phase 2 AI-Hub Full Candidate Inventory 구현 범위 확인
+- [ ] AI-Hub inventory 생성 및 validation 코드 작성
+- [ ] 사용자 실행용 전체 scan 명령과 PASS 기준 정의
 
 ---
 
@@ -180,7 +187,7 @@ Phase 1의 현재 작업:
 
 ## 6. 다음 작업
 
-Phase 1 완료 후:
+다음 작업:
 
 ```text
 Phase 2 — Full Candidate Inventory
@@ -205,9 +212,9 @@ Full Candidate Inventory 우선순위:
 ```text
 Phase 0  Repository Baseline          완료
 ↓
-Phase 1  프로젝트 골격            ← 현재
+Phase 1  프로젝트 골격            완료
 ↓
-Phase 2  Full Candidate Inventory
+Phase 2  Full Candidate Inventory  ← 다음
 ↓
 Phase 3  Fixed Pilot Manifest
 ↓
