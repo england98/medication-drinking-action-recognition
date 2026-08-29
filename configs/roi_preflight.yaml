@@ -1,0 +1,37 @@
+phase4:
+  selection_seed: 42
+  representative_per_stratum: 4
+  ai_hub_frame_index: 1
+  etri_frame_positions: [0.25, 0.5, 0.75]
+  roi:
+    padding_ratio: 0.30
+    minimum_width_px: 64
+    minimum_height_px: 64
+    hand_only_min_width_ratio: 0.55
+    hand_only_min_height_ratio: 0.70
+    hand_only_vertical_anchor: 0.75
+    face_only_min_width_ratio: 0.55
+    face_only_min_height_ratio: 0.75
+    face_only_vertical_anchor: 0.22
+    pose_only_min_width_ratio: 0.60
+    pose_only_min_height_ratio: 0.80
+    pose_only_vertical_anchor: 0.42
+    fallback_mode: full_frame
+    allow_partial: true
+  mediapipe:
+    num_faces: 1
+    num_hands: 2
+    num_poses: 1
+    minimum_face_detection_confidence: 0.50
+    minimum_face_presence_confidence: 0.50
+    minimum_hand_detection_confidence: 0.50
+    minimum_hand_presence_confidence: 0.50
+    minimum_pose_detection_confidence: 0.50
+    minimum_pose_presence_confidence: 0.50
+    face_model_relative_path: cache/mediapipe/face_landmarker.task
+    hand_model_relative_path: cache/mediapipe/hand_landmarker.task
+    pose_model_relative_path: cache/mediapipe/pose_landmarker_full.task
+    face_model_url: https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
+    hand_model_url: https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
+    pose_model_url: https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task
+  output_relative_path: roi_preflight

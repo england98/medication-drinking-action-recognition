@@ -190,6 +190,19 @@ Phase 3 Fixed Pilot Manifest 생성 및 validation:
 선정 정책은 `configs/pilot_manifest.yaml`에서 관리하며, 전체 candidate row를 유지한
 manifest와 selected-only CSV 및 SHA-256 요약은 Working Data의 `manifests/pilot/`에 생성됩니다.
 
+Phase 4 ROI Preflight 실행(공식 MediaPipe 모델이 Working cache에 없으면 함께 다운로드):
+
+```bash
+.venv/bin/python -m scripts.run_roi_preflight --download-models
+```
+
+MediaPipe Tasks 초기화에는 WSL의 `libGLESv2.so.2`가 필요합니다. 누락된 환경에서는 사용자가
+먼저 시스템 패키지 `libgles2`를 설치해야 합니다.
+
+대표 sample 선정과 ROI 기본값은 `configs/roi_preflight.yaml`에서 관리하며, visual output과
+report는 Working Data의 `roi_preflight/`에 생성됩니다. 통계와 visual review 후 사용자가
+PASS 여부를 판단하기 전까지 전체 Pilot preprocessing을 시작하지 않습니다.
+
 ---
 
 ## 7. 주요 문서

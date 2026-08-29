@@ -3,7 +3,7 @@
 # Project Status
 
 - 프로젝트: `medication-drinking-action-recognition`
-- 현재 Phase: **Phase 3 완료 — Phase 4 ROI Preflight 진입 준비**
+- 현재 Phase: **Phase 4 완료 — ROI Preflight PASS_WITH_WARNINGS / Phase 5 Stage A 진입 준비**
 - 최종 업데이트: 2026-08-29
 - 문서 성격: **현재 작업 상태의 Single Source of Truth**
 
@@ -18,7 +18,15 @@ AI-Hub Inventory 결과는 **PASS_WITH_WARNINGS**다.
 ETRI Batch B Full Candidate Inventory 생성·validation 코드와 소수 MP4 smoke test를 완료했으며,
 전체 scan 결과는 **PASS_WITH_WARNINGS**다. Phase 2 inventory를 입력으로 actor-disjoint split과
 participant-disjoint 5-fold를 먼저 고정한 뒤 Pilot subset을 선택했다. Fixed Pilot Manifest 생성,
-leakage/consistency validation 및 결정성 검증을 완료하여 현재는 **Phase 4 ROI Preflight 진입 준비 상태**다.
+leakage/consistency validation 및 결정성 검증을 완료했다. Phase 4의 deterministic representative
+selector, MediaPipe ROI, AI-Hub/ETRI loader, visual output, report 및 CLI 구현과 mock validation을
+완료했다. WSL의 `libGLESv2.so.2` prerequisite 해결 후 실제 AI-Hub 1-frame smoke도 통과했다.
+hand-only partial의 작은 crop 문제를 원본 크기 기반 contextual ROI로 보완하고 동일 sample 재검증을
+완료했다. 사용자 전체 64-frame 실행에서 ETRI fallback 68.75%와 class 편차가 확인되어 PASS하지
+않았다. no-face/no-hand 경로에 Pose contextual ROI를 추가하고 ETRI fallback 3-frame smoke를
+통과했다. 이후 사용자가 동일한 64-frame representative set을 재실행하고 visual review를 완료했다.
+최종 결과는 success 4, partial 60, fallback 0이며 ROI는 얼굴·상체·손과 행동 context를 보존했다.
+Phase 4 최종 판정은 **PASS_WITH_WARNINGS**이고 현재는 **Phase 5 Stage A 진입 준비 상태**다.
 
 현재 위치:
 
@@ -37,7 +45,9 @@ Full Candidate Inventory    완료
 ↓
 Fixed Pilot Manifest        완료
 ↓
-ROI Preflight               ← 다음
+ROI Preflight               완료 (PASS_WITH_WARNINGS)
+↓
+Stage A Visual Encoder      ← 다음
 ```
 
 ---
@@ -219,7 +229,29 @@ Phase 3 Fixed Pilot Manifest 완료 항목:
 
 현재 해야 할 작업:
 
-- [ ] Phase 4 ROI Preflight 대표 sample/config 범위 확정
+- [x] Phase 4 ROI Preflight 대표 sample/config 범위 확정
+- [x] MediaPipe face/hand landmark ROI 및 full-frame fallback 구현
+- [x] AI-Hub image / ETRI deterministic frame loader 구현
+- [x] overlay/crop/preview 및 JSON/CSV report 구현
+- [x] synthetic/mock unit validation 완료
+- [x] 공식 MediaPipe face/hand task 모델 Working cache 준비
+- [x] WSL 시스템 prerequisite `libgles2` 사용자 설치 및 MediaPipe 초기화 확인
+- [x] 실제 AI-Hub 1-frame smoke 및 hand-only contextual ROI 재검증
+- [x] 사용자 최초 64-frame Preflight 실행 및 ETRI 고 fallback 문제 확인 (PASS 보류)
+- [x] no-face/no-hand용 Pose contextual ROI 및 pose-only partial 구현
+- [x] 실제 ETRI 기존 fallback 3-frame Pose smoke 통과
+- [x] 사용자가 Pose 보완 정책으로 동일 64-frame representative set 재실행
+- [x] dataset/class별 fallback rate 및 visual output 검토
+- [x] 최종 64-frame 결과: success 4 / partial 60 / fallback 0
+- [x] AI-Hub: success 4 / partial 12 / fallback 0
+- [x] ETRI: success 0 / partial 48 / fallback 0
+- [x] reason: face_and_hand_landmarks 4 / hand_only 26 / pose_only 34
+- [x] 사용자 visual review 완료 및 Phase 4 `PASS_WITH_WARNINGS` 판정
+- [x] Pilot 동안 ROI policy 고정
+
+현재 해야 할 작업:
+
+- [ ] Phase 5 — Stage A Visual Encoder 구현 범위 확인
 
 ---
 
@@ -241,16 +273,16 @@ Phase 3 Fixed Pilot Manifest 완료 항목:
 다음 작업:
 
 ```text
-Phase 4 — ROI Preflight
+Phase 5 — Stage A Visual Encoder
 ```
 
-ROI Preflight 우선순위:
+Stage A 우선순위:
 
 ```text
-1. Fixed Pilot Manifest에서 representative sample 구성
-2. MediaPipe ROI success / partial / fallback 확인
-3. class별 fallback rate와 실패 원인 기록
-4. Preflight PASS gate 판정
+1. Design Baseline의 Stage A 범위와 Fixed Pilot/ROI policy 확인
+2. AI-Hub viewpoint_3 Dataset/DataLoader 및 preprocessing 설계
+3. MobileNetV3-Small ImageNet pretrained frame classifier 구현
+4. actor-disjoint split 기반 학습·평가 및 encoder checkpoint 정의
 ```
 
 모델 구현은 Manifest 단계 이후에 진행한다.
@@ -268,9 +300,9 @@ Phase 2  Full Candidate Inventory  완료
 ↓
 Phase 3  Fixed Pilot Manifest       완료
 ↓
-Phase 4  ROI Preflight              ← 다음
+Phase 4  ROI Preflight              완료 (PASS_WITH_WARNINGS)
 ↓
-Phase 5  Stage A
+Phase 5  Stage A                    ← 다음
 ↓
 Phase 6  ETRI Embedding
 ↓
@@ -287,7 +319,16 @@ Phase 10 Pipeline Integration
 
 ## 8. Blocker / Issue
 
-현재 문서에 기록된 미해결 blocker는 없음.
+현재 blocker는 없다. Phase 4 warning은 다음과 같다.
+
+```text
+1. ETRI 48 frame은 face+hand success 없이 모두 partial이다.
+2. ETRI의 hand_only / pose_only reason 분포는 class마다 다를 수 있다.
+3. pose_only ROI는 비교적 넓은 contextual crop이다.
+4. Stage B / End-to-End Error Analysis에서 ROI reason별 성능 편차를 확인한다.
+5. 현재 Pilot에서는 ROI policy를 고정하고 Stage A/B 결과를 보고 즉시 재튜닝하지 않는다.
+6. 필요하면 Pilot 완료 후 Full Experiment에서 ROI scale/policy ablation을 검토한다.
+```
 
 새로운 blocker, 검증 실패, 설계 변경 필요성이 발생하면 이 섹션을 즉시 갱신한다.
 
