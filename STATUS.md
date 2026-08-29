@@ -3,7 +3,7 @@
 # Project Status
 
 - 프로젝트: `medication-drinking-action-recognition`
-- 현재 Phase: **Phase 2 진입 준비 완료 — Full Candidate Inventory**
+- 현재 Phase: **Phase 2 진행 중 — Full Candidate Inventory**
 - 최종 업데이트: 2026-08-29
 - 문서 성격: **현재 작업 상태의 Single Source of Truth**
 
@@ -13,7 +13,8 @@
 
 개발환경, Data Readiness, Git Repository Baseline 구축이 완료되었다.
 Phase 1 프로젝트 최소 골격과 안전한 path infrastructure 구축을 완료했다.
-현재는 **Phase 2 Full Candidate Inventory 구현에 진입 가능한 상태**다.
+Phase 2의 AI-Hub Full Candidate Inventory 생성·validation 및 전체 scan을 완료했다.
+AI-Hub Inventory 결과는 **PASS_WITH_WARNINGS**이며, 현재는 ETRI Inventory 시작 전 상태다.
 
 현재 위치:
 
@@ -28,7 +29,7 @@ Git baseline 검증 / commit
 ↓
 Phase 1 프로젝트 골격       완료
 ↓
-Full Candidate Inventory    ← 다음
+Full Candidate Inventory    ← 진행 중
 ```
 
 ---
@@ -164,11 +165,24 @@ Phase 1 완료 항목:
 - [x] canonical path 기준 Raw input / Working output 양방향 분리 안전장치 구현
 - [x] YAML / 필수 key / root 존재 / 경로 분리 unit test 구현 및 통과
 
+Phase 2 AI-Hub 구현 완료 항목:
+
+- [x] Phase 2 AI-Hub Full Candidate Inventory 구현 범위 확인
+- [x] AI-Hub inventory 생성 및 validation 코드 작성
+- [x] metadata xlsx intersection join 구현
+- [x] 사용자 실행용 전체 scan 명령과 PASS 기준 정의
+- [x] mock unit test 및 실제 AI-Hub 3 JSON smoke test 통과
+- [x] AI-Hub Full Candidate Inventory 전체 scan 완료
+- [x] 전체 count 및 metadata intersection join PASS
+- [x] Raw JSON annotation 이상 1건 탐지 및 exclusion 확정
+- [x] AI-Hub Inventory 결과 `PASS_WITH_WARNINGS`
+- [x] 사용 가능 AI-Hub candidate 18,419건 확정
+- [x] Phase 3용 `pilot_selected=true && valid=false` validation FAIL 정책 및 공통 검사 함수 정의
+
 현재 해야 할 작업:
 
-- [ ] Phase 2 AI-Hub Full Candidate Inventory 구현 범위 확인
-- [ ] AI-Hub inventory 생성 및 validation 코드 작성
-- [ ] 사용자 실행용 전체 scan 명령과 PASS 기준 정의
+- [ ] ETRI Batch B Full Candidate Inventory 구현
+- [ ] Phase 3 Fixed Pilot Manifest 구현 시 공통 selection validation 연결
 
 ---
 
@@ -214,7 +228,7 @@ Phase 0  Repository Baseline          완료
 ↓
 Phase 1  프로젝트 골격            완료
 ↓
-Phase 2  Full Candidate Inventory  ← 다음
+Phase 2  Full Candidate Inventory  ← 진행 중
 ↓
 Phase 3  Fixed Pilot Manifest
 ↓
