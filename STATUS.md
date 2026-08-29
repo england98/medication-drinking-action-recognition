@@ -3,7 +3,7 @@
 # Project Status
 
 - 프로젝트: `medication-drinking-action-recognition`
-- 현재 Phase: **Phase 2 완료 — Phase 3 Fixed Pilot Manifest 진입 준비**
+- 현재 Phase: **Phase 3 완료 — Phase 4 ROI Preflight 진입 준비**
 - 최종 업데이트: 2026-08-29
 - 문서 성격: **현재 작업 상태의 Single Source of Truth**
 
@@ -16,8 +16,9 @@ Phase 1 프로젝트 최소 골격과 안전한 path infrastructure 구축을 �
 Phase 2의 AI-Hub Full Candidate Inventory 생성·validation 및 전체 scan을 완료했다.
 AI-Hub Inventory 결과는 **PASS_WITH_WARNINGS**다.
 ETRI Batch B Full Candidate Inventory 생성·validation 코드와 소수 MP4 smoke test를 완료했으며,
-전체 scan 결과는 **PASS_WITH_WARNINGS**다. AI-Hub와 ETRI Full Candidate Inventory가 모두 확정되어
-현재는 **Phase 3 Fixed Pilot Manifest 진입 준비 상태**다.
+전체 scan 결과는 **PASS_WITH_WARNINGS**다. Phase 2 inventory를 입력으로 actor-disjoint split과
+participant-disjoint 5-fold를 먼저 고정한 뒤 Pilot subset을 선택했다. Fixed Pilot Manifest 생성,
+leakage/consistency validation 및 결정성 검증을 완료하여 현재는 **Phase 4 ROI Preflight 진입 준비 상태**다.
 
 현재 위치:
 
@@ -34,7 +35,9 @@ Phase 1 프로젝트 골격       완료
 ↓
 Full Candidate Inventory    완료
 ↓
-Fixed Pilot Manifest        ← 다음
+Fixed Pilot Manifest        완료
+↓
+ROI Preflight               ← 다음
 ```
 
 ---
@@ -200,9 +203,23 @@ Phase 2 ETRI 구현 완료 항목:
 - [x] ETRI Inventory 결과 `PASS_WITH_WARNINGS`
 - [x] 사용 가능 ETRI candidate 6,588건 확정
 
+Phase 3 Fixed Pilot Manifest 완료 항목:
+
+- [x] selection/split/fold config 및 seed 외부화
+- [x] AI-Hub 202 actor의 train 162 / val 40 actor-disjoint split 확정
+- [x] AI-Hub Pilot 400 video / 1,200 frame 선택 (복약 100, 음수 100, 기타 200)
+- [x] AI-Hub Eat_food hard negative 50 video 포함
+- [x] ETRI 30 participant의 participant-disjoint 5-fold 확정 (fold별 6명)
+- [x] ETRI Pilot 239 clip 선택 (복약 59, 음수 60, 기타 120)
+- [x] ETRI hard negative 60 / general other 60 구성
+- [x] invalid 및 A045~A048 선택 제외 validation
+- [x] 전체 candidate row 보존 및 `roi_status=pending` 유지
+- [x] Fixed Pilot Manifest SHA-256 summary 생성
+- [x] synthetic unit test 및 실제 inventory manifest 생성/validation 통과
+
 현재 해야 할 작업:
 
-- [ ] Phase 3 Fixed Pilot Manifest 구현 시 공통 selection validation 연결
+- [ ] Phase 4 ROI Preflight 대표 sample/config 범위 확정
 
 ---
 
@@ -224,17 +241,16 @@ Phase 2 ETRI 구현 완료 항목:
 다음 작업:
 
 ```text
-Phase 2 — Full Candidate Inventory
+Phase 4 — ROI Preflight
 ```
 
-Full Candidate Inventory 우선순위:
+ROI Preflight 우선순위:
 
 ```text
-1. AI-Hub Full Candidate Inventory
-2. ETRI Batch B Full Candidate Inventory
-3. inventory validation
-4. split / fold
-5. Fixed Pilot Manifest
+1. Fixed Pilot Manifest에서 representative sample 구성
+2. MediaPipe ROI success / partial / fallback 확인
+3. class별 fallback rate와 실패 원인 기록
+4. Preflight PASS gate 판정
 ```
 
 모델 구현은 Manifest 단계 이후에 진행한다.
@@ -250,9 +266,9 @@ Phase 1  프로젝트 골격            완료
 ↓
 Phase 2  Full Candidate Inventory  완료
 ↓
-Phase 3  Fixed Pilot Manifest       ← 다음
+Phase 3  Fixed Pilot Manifest       완료
 ↓
-Phase 4  ROI Preflight
+Phase 4  ROI Preflight              ← 다음
 ↓
 Phase 5  Stage A
 ↓

@@ -1,0 +1,15 @@
+phase3:
+  split_seed: 42
+  pilot_seed: 42
+  ai_hub:
+    train_ratio: 0.8
+    class_target_counts:
+      "복약": 100
+      "음수": 100
+      "기타": 200
+  etri:
+    n_folds: 5
+    target_cap_per_participant: 2
+    other_cap_per_participant: 4
+    hard_negative_per_participant: 2
+    general_other_per_participant: 2

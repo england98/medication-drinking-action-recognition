@@ -181,6 +181,15 @@ Raw 데이터는 수정하지 않습니다.
 
 필요한 디렉토리는 구현 단계에 맞춰 생성합니다.
 
+Phase 3 Fixed Pilot Manifest 생성 및 validation:
+
+```bash
+.venv/bin/python -m scripts.build_pilot_manifests
+```
+
+선정 정책은 `configs/pilot_manifest.yaml`에서 관리하며, 전체 candidate row를 유지한
+manifest와 selected-only CSV 및 SHA-256 요약은 Working Data의 `manifests/pilot/`에 생성됩니다.
+
 ---
 
 ## 7. 주요 문서
