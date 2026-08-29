@@ -3,8 +3,9 @@
 # Project Status
 
 - 프로젝트: `medication-drinking-action-recognition`
-- 현재 Phase: **Phase 5 — IMPLEMENTED / AWAITING USER SMOKE TEST AND TRAINING**
-- 최종 업데이트: 2026-08-29
+- 현재 Phase: **Phase 5 — COMPLETE**
+- 다음 Phase: **Phase 6 — READY TO START**
+- 최종 업데이트: 2026-08-30
 - 문서 성격: **현재 작업 상태의 Single Source of Truth**
 
 ---
@@ -26,8 +27,9 @@ hand-only partial의 작은 crop 문제를 원본 크기 기반 contextual ROI�
 않았다. no-face/no-hand 경로에 Pose contextual ROI를 추가하고 ETRI fallback 3-frame smoke를
 통과했다. 이후 사용자가 동일한 64-frame representative set을 재실행하고 visual review를 완료했다.
 최종 결과는 success 4, partial 60, fallback 0이며 ROI는 얼굴·상체·손과 행동 context를 보존했다.
-Phase 4 최종 판정은 **PASS_WITH_WARNINGS**다. Phase 5 Stage A 코드와 자동 테스트 경로를
-구현했으며, 실제 GPU smoke test·batch size 확정·본 학습·평가를 기다리는 상태다.
+Phase 4 최종 판정은 **PASS_WITH_WARNINGS**다. Phase 5 Stage A 구현, GPU smoke, 본 학습,
+frame/video 평가, best checkpoint reload, Encoder A/B interface 검증 및 독립 Final Audit를
+완료했다. 최종 판정은 **PHASE 5 COMPLETE — READY FOR PHASE 6**이다.
 
 현재 위치:
 
@@ -48,7 +50,9 @@ Fixed Pilot Manifest        완료
 ↓
 ROI Preflight               완료 (PASS_WITH_WARNINGS)
 ↓
-Stage A Visual Encoder      구현 완료 / 사용자 실행 대기
+Stage A Visual Encoder      완료
+↓
+ETRI Embedding              ← 다음
 ```
 
 ---
@@ -173,6 +177,52 @@ baseline commit: d7a6101 chore: establish pilot project baseline
 Phase 0: COMPLETE
 ```
 
+Phase 5 Stage A 최종 결과:
+
+```text
+Final Audit: PHASE 5 COMPLETE — READY FOR PHASE 6
+GPU smoke: PASS
+Batch size: 8
+Epochs: 15
+Fine-tuning: last_n_blocks (last_n_blocks=2)
+Frozen BatchNorm: freeze_running_stats
+Run ID: stage-a-20260829T170113531051Z-adf86795
+Best epoch: 12
+Best validation frame Macro-F1: 0.536788810523163
+Best validation video Macro-F1: 0.652049
+Video Recall: 복약 0.55 / 음수 0.60 / 기타 0.80
+Embedding dimension: 1024
+Encoder A/B interface: PASS ([B,1024] / [B,1024])
+Best checkpoint reload: PASS
+Reload evaluation reproducibility: PASS (동일 조건 2회 완전 동일)
+Checkpoint provenance: PASS
+Phase 3/4 frozen artifact: PASS
+```
+
+Video confusion matrix:
+
+```text
+[[11, 6, 3],
+ [ 2,12, 6],
+ [ 4, 4,32]]
+```
+
+Encoder B checkpoint:
+
+```text
+<work_root>/checkpoints/stage_a/stage-a-20260829T170113531051Z-adf86795/best.pt
+```
+
+Git / MLflow provenance:
+
+```text
+git_commit_hash: 7c3f1c34f1def0dfbf0800557f1e596321506be4
+git_dirty: false
+MLflow experiment: stage_a_visual_encoder
+MLflow run_id: ffb970c506c843e89b6613788c61a2c9
+MLflow per-epoch / best / final metrics 및 artifacts: PASS
+```
+
 ---
 
 ## 4. 현재 해야 할 작업
@@ -256,11 +306,11 @@ Phase 3 Fixed Pilot Manifest 완료 항목:
 - [x] Stage A frame/video 평가, checkpoint provenance, MLflow logging 경로 구현
 - [x] Stage A unit/integration 자동 테스트 구현
 - [x] Phase 5 read-only audit 및 본 학습 전 필수 code fix 반영
-- [ ] 수정 후 final implementation audit
-- [ ] 사용자 실제 GPU smoke test 및 batch size 확정
-- [ ] Stage A 본 학습 및 frame/video evaluation
-- [ ] Encoder B best checkpoint 생성/reload 및 Encoder A/B interface 검증
-- [ ] Phase 5 final audit (완료 전 Phase 6 진입 금지)
+- [x] 수정 후 final implementation audit
+- [x] 사용자 실제 GPU smoke test PASS 및 batch size 8 확정
+- [x] Stage A 15 epoch 본 학습 및 frame/video evaluation 완료
+- [x] Encoder B best checkpoint 생성/reload 및 Encoder A/B interface 검증 PASS
+- [x] Phase 5 독립 Final Audit 완료
 
 ---
 
@@ -282,21 +332,13 @@ Phase 3 Fixed Pilot Manifest 완료 항목:
 다음 작업:
 
 ```text
-Phase 5 code fix 검증
-→ final implementation audit
-→ 사용자 GPU smoke
-→ Stage A 본 학습 / 평가
-→ Phase 5 final audit
+Phase 6 — ETRI Embedding
 ```
 
-Stage A 남은 순서:
+Phase 6 진입 상태:
 
 ```text
-1. code fix 자동 검증 및 final implementation audit
-2. 사용자 GPU smoke test와 batch size 확정
-3. Stage A 본 학습 및 frame/video evaluation
-4. Encoder B best checkpoint reload와 Encoder A/B interface 검증
-5. Phase 5 final audit
+READY TO START
 ```
 
 ---
@@ -314,9 +356,9 @@ Phase 3  Fixed Pilot Manifest       완료
 ↓
 Phase 4  ROI Preflight              완료 (PASS_WITH_WARNINGS)
 ↓
-Phase 5  Stage A                    구현 완료 / 사용자 실행 전 audit 대기
+Phase 5  Stage A                    완료
 ↓
-Phase 6  ETRI Embedding
+Phase 6  ETRI Embedding             ← 다음
 ↓
 Phase 7  2×2 Ablation
 ↓
@@ -340,6 +382,22 @@ Phase 10 Pipeline Integration
 4. Stage B / End-to-End Error Analysis에서 ROI reason별 성능 편차를 확인한다.
 5. 현재 Pilot에서는 ROI policy를 고정하고 Stage A/B 결과를 보고 즉시 재튜닝하지 않는다.
 6. 필요하면 Pilot 완료 후 Full Experiment에서 ROI scale/policy ablation을 검토한다.
+```
+
+Phase 5 warning / limitation:
+
+```text
+1. Train loss는 지속 감소했지만 validation loss는 후반 증가하여 overfitting 신호가 확인됐다.
+   Pilot 목적은 최고 성능 확보가 아니라 Stage A Visual Encoder 생성과 전체 pipeline 검증이다.
+   Validation video Macro-F1 기반 best checkpoint 정책에 따라 epoch 12 Encoder B를 고정한다.
+   이 결과를 이유로 Stage A를 재튜닝하거나 재학습하지 않는다.
+   Encoder A/B의 실질적 가치는 이후 ETRI Stage B, 2×2 ablation,
+   participant-disjoint 5-fold CV에서 평가한다.
+2. Stage A 음수는 AI-Hub Drink_bever / Drink_alcohol 기반 auxiliary visual class이며,
+   최종 ETRI 물 마시기 성능이 아니다.
+3. CUDA strict deterministic 미설정은 비차단 limitation이다.
+4. Encoder A는 별도 checkpoint 없이 torchvision ImageNet pretrained
+   MobileNetV3-Small로 재구성하는 설계를 유지한다.
 ```
 
 새로운 blocker, 검증 실패, 설계 변경 필요성이 발생하면 이 섹션을 즉시 갱신한다.
