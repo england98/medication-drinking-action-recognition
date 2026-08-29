@@ -1,0 +1,59 @@
+# Path configuration template
+#
+# Canonical filename:
+#   configs/paths.example.yaml
+#
+# Copy this file to:
+#   configs/paths.local.yaml
+#
+# Then replace the placeholder values in paths.local.yaml with
+# the absolute paths for the current machine.
+#
+# IMPORTANT
+# - paths.example.yaml: tracked by Git
+# - paths.local.yaml:   NOT tracked by Git
+# - Do not hardcode machine-specific absolute paths in Python code.
+# - Raw data must be treated as immutable.
+# - Derived / generated data must be written under work_root or runtime paths.
+
+paths:
+  # --------------------------------------------------------------------------
+  # Project root
+  # --------------------------------------------------------------------------
+  project_root: "/home/<user>/projects/medication-drinking-action-recognition"
+
+  # --------------------------------------------------------------------------
+  # Raw datasets (read-only / immutable)
+  # --------------------------------------------------------------------------
+  ai_hub_raw_root: "/mnt/<drive>/path/to/data_raw/057.일상생활_영상_데이터/01.데이터"
+
+  etri_raw_root: "/mnt/<drive>/path/to/data_raw/고령자 일상행동인식 3차원 영상 데이터셋(리빙랩)"
+
+  # --------------------------------------------------------------------------
+  # Working data root
+  # All generated / derived large files should be placed below this root.
+  # --------------------------------------------------------------------------
+  work_root: "/mnt/<drive>/path/to/data_workspace/medication_drinking_action_data"
+
+  # --------------------------------------------------------------------------
+  # Optional working subdirectories
+  # These may be created by the implementation as needed.
+  # --------------------------------------------------------------------------
+  manifests_root: "/mnt/<drive>/path/to/data_workspace/medication_drinking_action_data/manifests"
+
+  cache_root: "/mnt/<drive>/path/to/data_workspace/medication_drinking_action_data/cache"
+
+  embeddings_root: "/mnt/<drive>/path/to/data_workspace/medication_drinking_action_data/embeddings"
+
+  checkpoints_root: "/mnt/<drive>/path/to/data_workspace/medication_drinking_action_data/checkpoints"
+
+  self_recorded_root: "/mnt/<drive>/path/to/data_workspace/medication_drinking_action_data/self_recorded"
+
+  pipeline_check_root: "/mnt/<drive>/path/to/data_workspace/medication_drinking_action_data/self_recorded/pipeline_check"
+
+  # --------------------------------------------------------------------------
+  # Local runtime paths inside the repository
+  # --------------------------------------------------------------------------
+  runtime_root: "/home/<user>/projects/medication-drinking-action-recognition/runtime"
+
+  mlflow_db: "/home/<user>/projects/medication-drinking-action-recognition/runtime/mlflow/mlflow.db"

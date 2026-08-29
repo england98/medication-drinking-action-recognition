@@ -1,0 +1,271 @@
+# STATUS.md
+
+# Project Status
+
+- 프로젝트: `medication-drinking-action-recognition`
+- 현재 Phase: **Phase 0 — Repository Baseline**
+- 최종 업데이트: 2026-08-29
+- 문서 성격: **현재 작업 상태의 Single Source of Truth**
+
+---
+
+## 1. 현재 상태
+
+개발환경 구축과 상위 설계 정리는 완료되었으며,
+현재는 **첫 Git baseline commit을 만들기 위한 Repository Baseline 단계**다.
+
+현재 위치:
+
+```text
+개발환경 구축
+↓
+개발환경 Audit
+↓
+Repository 정리
+↓
+Git baseline 검증 / commit   ← 현재
+↓
+Phase 1 프로젝트 골격
+↓
+Full Candidate Inventory
+```
+
+---
+
+## 2. 완료
+
+### 데이터 / 분석
+
+- [x] AI-Hub 데이터 확보
+- [x] ETRI 데이터 확보
+- [x] AI-Hub 데이터 구조 분석
+- [x] ETRI 데이터 구조 분석
+- [x] AI-Hub 복약 / 음수 / 기타 관점 EDA
+- [x] ETRI 복약 / 물마시기 / 기타 관점 EDA
+- [x] 모델 아키텍처 리서치
+- [x] 1차 Pilot 모델 아키텍처 설계
+
+### 개발환경
+
+- [x] WSL 2 / Ubuntu 개발환경 구축
+- [x] 최종 WSL Project Root 확정
+- [x] Python 3.12 `.venv` 재구축
+- [x] VS Code Python Interpreter 연결
+- [x] PyTorch / Torchvision 설치 확인
+- [x] CUDA 사용 가능 확인
+- [x] GTX 1650 Ti GPU 인식 확인
+- [x] CUDA tensor 연산 확인
+- [x] MediaPipe / OpenCV / MLflow 등 주요 패키지 확인
+- [x] `.python-version` 생성
+- [x] `requirements-lock.txt` 생성
+- [x] MLflow DB를 `runtime/mlflow/mlflow.db`로 정리
+- [x] Raw / Working SSD 경로 확정
+- [x] GPU / CUDA 현재 상태 재검증
+
+### 문서 / Repository 정리
+
+- [x] `docs/00_Pilot_Design_Baseline.md` 배치
+- [x] `docs/01_개발환경_구축_기록.md` 배치
+- [x] AI-Hub 구조 / EDA reference 배치
+- [x] ETRI 구조 / EDA reference 배치
+- [x] 개발환경 read-only Audit 완료
+- [x] `configs/paths.example.yaml` 작성
+- [x] `configs/paths.local.yaml` 실제 PC 경로 설정 및 검증
+- [x] `configs/` 디렉토리 준비
+- [x] `docs/` 소유권 정리
+- [x] `*:Zone.Identifier` 잔재 파일 정리
+- [x] `.gitignore`에 `*:Zone.Identifier` 규칙 반영
+- [x] `AGENTS.md` 역할 정리
+- [x] `README.md` 역할 정리
+- [x] `STATUS.md` 역할 정리
+- [x] Data Readiness Audit 완료
+
+---
+
+## 3. 최근 검증 결과
+
+개발환경 Audit 결과:
+
+```text
+FAIL = 0
+환경 기준 = PASS
+```
+
+확인된 항목:
+
+- Project Root 일치
+- WSL / Ubuntu 버전 일치
+- `.venv` / Interpreter 일치
+- Python 3.12.14 일치
+- 주요 패키지 버전 일치
+- CUDA available = True
+- GPU = NVIDIA GeForce GTX 1650 Ti
+- CUDA tensor 연산 성공
+- `.python-version` 정상
+- `requirements-lock.txt`와 현재 환경 일치
+- AI-Hub Raw read 가능
+- ETRI Raw read 가능
+- Working Data read/write 가능
+- MLflow DB 경로 일치
+- 기준 문서 존재
+
+이전 Audit에서 지적된 Repository 정리 항목은 현재 문서 기록 기준으로 모두 처리된 상태다.
+
+Data Readiness Audit 결과:
+
+```text
+AI-Hub: READY WITH WARNING
+ETRI: READY WITH WARNING
+Working: READY
+전체: DATA READY WITH WARNINGS
+```
+
+확인된 후속 검증 항목:
+
+- AI-Hub 18,420 JSON / 55,260 JPG 전체 count는 Phase 2 Full Candidate Inventory에서 최종 검증한다.
+- ETRI `P205/A053_P205_G011_H120.mp4` 비정상 RGB는 Raw를 변경하지 않고 Phase 2 inventory validation에서 invalid / exclusion flag로 처리한다.
+- Working Root는 read 및 소형 임시 파일 write/delete test를 통과했다.
+- AI-Hub Raw / ETRI Raw / Working Root는 canonical path 기준으로 서로 분리되며 symlink가 아니다.
+
+---
+
+## 4. 현재 해야 할 작업
+
+Phase 0의 남은 작업:
+
+- [ ] `git init -b main`
+- [ ] `git status` 확인
+- [ ] `git check-ignore`로 ignore 규칙 검증
+- [ ] `.venv/` ignore 확인
+- [ ] `runtime/` ignore 확인
+- [ ] `configs/paths.local.yaml` ignore 확인
+- [ ] `git add -n .` staging dry-run 확인
+- [ ] 불필요한 대용량 / runtime 파일이 staging되지 않는지 확인
+- [ ] 첫 baseline commit
+
+예정 commit message:
+
+```text
+chore: establish pilot project baseline
+```
+
+> Git commit은 `AGENTS.md` 규칙에 따라 사용자 승인/실행 범위를 준수한다.
+
+---
+
+## 5. Phase 0 완료 기준
+
+다음을 모두 만족하면 Phase 0 완료:
+
+- [ ] Git repository 초기화
+- [ ] `.gitignore` 검증 PASS
+- [ ] `.venv/` / `runtime/` / local path config ignore 확인
+- [ ] staging dry-run PASS
+- [ ] 대용량 데이터 / runtime 산출물 staging 없음
+- [ ] baseline commit 완료
+
+Phase 0 완료 즉시 이 문서의 현재 Phase를 다음 단계로 갱신한다.
+
+---
+
+## 6. 다음 작업
+
+Phase 0 완료 후:
+
+```text
+Phase 1 — 프로젝트 골격
+↓
+Phase 2 — Full Candidate Inventory
+```
+
+Full Candidate Inventory 우선순위:
+
+```text
+1. AI-Hub Full Candidate Inventory
+2. ETRI Batch B Full Candidate Inventory
+3. inventory validation
+4. split / fold
+5. Fixed Pilot Manifest
+```
+
+모델 구현은 Manifest 단계 이후에 진행한다.
+
+---
+
+## 7. Pilot 전체 진행 순서
+
+```text
+Phase 0  Repository Baseline          ← 현재
+↓
+Phase 1  프로젝트 골격
+↓
+Phase 2  Full Candidate Inventory
+↓
+Phase 3  Fixed Pilot Manifest
+↓
+Phase 4  ROI Preflight
+↓
+Phase 5  Stage A
+↓
+Phase 6  ETRI Embedding
+↓
+Phase 7  2×2 Ablation
+↓
+Phase 8  구조 선택
+↓
+Phase 9  Pilot deployment/check model
+↓
+Phase 10 Pipeline Integration
+```
+
+---
+
+## 8. Blocker / Issue
+
+현재 문서에 기록된 미해결 blocker는 없음.
+
+새로운 blocker, 검증 실패, 설계 변경 필요성이 발생하면 이 섹션을 즉시 갱신한다.
+
+---
+
+## 9. Reference
+
+상위 설계 기준:
+
+```text
+docs/00_Pilot_Design_Baseline.md
+```
+
+개발환경 기준:
+
+```text
+docs/01_개발환경_구축_기록.md
+```
+
+Coding Agent 작업 규칙:
+
+```text
+AGENTS.md
+```
+
+프로젝트 개요:
+
+```text
+README.md
+```
+
+---
+
+## 10. STATUS 갱신 원칙
+
+이 문서는 작업 상태가 실제로 변경될 때 갱신한다.
+
+반드시 갱신:
+
+- Phase 변경
+- 체크리스트 완료
+- 중요한 구현 작업 완료
+- blocker / issue 발생 또는 해소
+- 다음 작업 / 우선순위 변경
+
+`README.md`와 `AGENTS.md`에는 일상적인 진행 상태를 중복 기록하지 않는다.
