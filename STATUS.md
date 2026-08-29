@@ -3,8 +3,9 @@
 # Project Status
 
 - 프로젝트: `medication-drinking-action-recognition`
-- 현재 Phase: **Phase 6 — COMPLETE**
-- 다음 Phase: **Phase 7 — READY TO START**
+- 현재 Phase: **Phase 7 — IN PROGRESS / PRE-RUN VALIDATION & SMOKE COMPLETE**
+- 이전 Phase: **Phase 6 — COMPLETE**
+- 다음 작업: **Phase 7 implementation commit/push → Full 2×2 × 5-fold CV**
 - 최종 업데이트: 2026-08-30
 - 문서 성격: **현재 작업 상태의 Single Source of Truth**
 
@@ -32,7 +33,12 @@ frame/video 평가, best checkpoint reload, Encoder A/B interface 검증 및 독
 완료했다. 최종 판정은 **PHASE 5 COMPLETE — READY FOR PHASE 6**이다. Phase 6에서는
 Fixed ETRI Pilot 239개 전체에 대한 frozen Encoder A/B embedding cache 생성, full-cache
 validation gate 및 독립 Final Audit를 완료했다. 최종 상태는 **Phase 6 COMPLETE — Phase 7
-READY TO START**이다.
+READY TO START**이다. Phase 7의 immutable cache dataset, Mean/GRU Stage B, 2×2 experiment
+definition, participant-disjoint fold guard, 공통 trainer, metric/OOF/aggregation/checkpoint/MLflow 및
+CLI 구현을 완료하고 실제 239-cache validation-only를 통과했다. 독립 Pre-run Audit 결과는
+**PASS_WITH_WARNINGS — READY FOR SMOKE AFTER NOTED CHECKS**였고, 이후 Mean/GRU/MLflow smoke와
+최종 regression을 모두 통과했다. Phase 7 implementation은 COMPLETE지만 Phase 7 overall은
+IN PROGRESS다. 전체 20개 CV run은 아직 실행하지 않았으며 Phase 8은 시작하지 않았다.
 
 현재 위치:
 
@@ -57,7 +63,7 @@ Stage A Visual Encoder      완료
 ↓
 ETRI Embedding Cache        완료 (PASS_WITH_WARNINGS)
 ↓
-2×2 Ablation                ← 다음 (READY TO START)
+2×2 Ablation                ← 현재 (pre-run validation & smoke complete / full CV ready after implementation commit)
 ```
 
 ---
@@ -278,6 +284,29 @@ Independent Final Audit: PASS_WITH_WARNINGS
 Phase 3/4/5 frozen artifact: unchanged
 ```
 
+Phase 7 Pre-run 상태:
+
+```text
+Phase 7 implementation: COMPLETE
+Phase 7 overall status: IN PROGRESS
+Validation-only: PASS
+Independent Pre-run Audit: PASS_WITH_WARNINGS
+Audit findings: BLOCKER 0 / MAJOR 0 / MINOR 4 / INFO 3
+Manifest/cache/provenance: PASS (239 clips, Encoder A/B, T=64, D=1024)
+Participant fold leakage: PASS (fold 0~4, overlap 0)
+A/B/C/D fairness definition: PASS
+Stage B: Mean Pooling + Linear / GRU + Linear
+GRU: hidden 128 / 1 layer / unidirectional / dropout 0 / final hidden
+Training policy: Standard CE / AdamW / LR 1e-4 / weight decay 1e-4 / batch 16 / epoch 15
+Seed policy: base 42 + fold, 동일 fold의 A/B/C/D 공통
+Mean smoke: PASS (A / fold 0 / 1 epoch / no MLflow)
+GRU smoke: PASS (C / fold 0 / 1 epoch / no MLflow)
+MLflow smoke: PASS (A / fold 1 / 1 epoch; run/params/metrics/artifacts verified)
+Final regression: 85 tests PASS / git diff --check PASS / validate-only PASS
+Full 2×2 × 5-fold CV: NOT RUN
+Phase 8: NOT STARTED
+```
+
 ---
 
 ## 4. 현재 해야 할 작업
@@ -387,13 +416,13 @@ Phase 3 Fixed Pilot Manifest 완료 항목:
 다음 작업:
 
 ```text
-Phase 7 — 2×2 Ablation (READY TO START)
+Phase 7 implementation commit/push → Full 2×2 × 5-fold CV
 ```
 
-Phase 6 최종 상태:
+Phase 7 현재 상태:
 
 ```text
-COMPLETE — Full Cache PASS / Independent Final Audit PASS_WITH_WARNINGS
+IN PROGRESS — Pre-run validation & smoke complete / Full CV ready after implementation commit
 ```
 
 Phase 6 현재 작업:
@@ -411,6 +440,27 @@ Phase 6 현재 작업:
 - [x] full-cache validation gate PASS
 - [x] Phase 6 independent Final Audit 완료
 - [x] Final audit findings P-1~P-4 closed
+
+Phase 7 현재 작업:
+
+- [x] immutable Phase 6 cache dataset/validation 구현
+- [x] Mean Pooling + Linear 및 GRU + Linear 구현
+- [x] A/B/C/D canonical experiment/fairness validation 구현
+- [x] participant-disjoint 5-fold runtime guard 구현
+- [x] 공통 training/validation, best checkpoint 및 reload 구현
+- [x] fold metric, OOF prediction/completeness, 5-fold aggregation 구현
+- [x] MLflow provenance 및 output overwrite safety 구현
+- [x] validation-only / fold / experiment / all-experiment / smoke CLI 구현
+- [x] synthetic Phase 7 tests 및 실제 239-cache validation-only PASS
+- [x] Phase 7 pre-run independent audit (`PASS_WITH_WARNINGS`)
+- [x] Mean smoke 완료 (A / fold 0 / 1 epoch / no MLflow)
+- [x] GRU smoke 완료 (C / fold 0 / 1 epoch / no MLflow)
+- [x] MLflow smoke 완료 (A / fold 1 / 1 epoch)
+- [x] smoke 이후 final regression 85 tests / diff check / validation-only PASS
+- [ ] Phase 7 implementation commit/push
+- [ ] A/B/C/D × 5-fold 총 20 run
+- [ ] 실제 OOF / 5-fold aggregation 확인
+- [ ] Post-run independent audit 및 Phase 7 COMPLETE 판정
 
 ---
 
@@ -431,7 +481,7 @@ Phase 5  Stage A                    완료
 ↓
 Phase 6  ETRI Embedding             완료 (PASS_WITH_WARNINGS)
 ↓
-Phase 7  2×2 Ablation               다음 (READY TO START)
+Phase 7  2×2 Ablation               진행 중 (pre-run validation & smoke complete / full CV pending)
 ↓
 Phase 8  구조 선택
 ↓
@@ -481,6 +531,24 @@ Phase 6 warning / limitation:
 4. Independent Final Audit 판정은 PASS_WITH_WARNINGS이다.
 5. Final audit findings P-1~P-4는 deterministic cache naming, full-run gate,
    resume rejection, output-root/manifest mutation 회귀 테스트로 모두 closed 상태다.
+```
+
+Phase 7 warning / limitation:
+
+```text
+1. 전체 A/B/C/D × 5-fold 20개 training run은 아직 실행하지 않았다.
+2. Pre-run Independent Audit은 PASS_WITH_WARNINGS이며 BLOCKER 0 / MAJOR 0 / MINOR 4다.
+3. MINOR findings:
+   - MLflow param에는 별도 smoke field가 없으나 run name의 `_smoke` suffix로 구분된다.
+   - experiment 중간 실패 시 per-fold resume 기능이 없다.
+   - aggregate output이 이미 존재할 때 error message 일관성이 부족하다.
+   - checkpoint provenance의 config path가 absolute path여서 portability limitation이 있다.
+4. CUDA strict deterministic mode는 활성화하지 않았다.
+5. Smoke metric은 model selection 또는 tuning에 사용하지 않는다.
+6. GRU hidden_size=128은 사전 고정값이며 sweep/tuning 결과가 아니다.
+7. Phase 7 결과 aggregation과 OOF completeness는 구현·synthetic test 상태이며 실제 20-run,
+   aggregation 및 post-run independent audit 이후에만 Phase 7 COMPLETE로 판정한다.
+8. Phase 8 구조 선택 또는 winner 판정 로직은 구현하지 않았다.
 ```
 
 새로운 blocker, 검증 실패, 설계 변경 필요성이 발생하면 이 섹션을 즉시 갱신한다.

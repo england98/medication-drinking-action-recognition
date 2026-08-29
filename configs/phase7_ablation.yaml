@@ -1,0 +1,29 @@
+phase7:
+  seed: 42
+  sequence_length: 64
+  embedding_dimension: 1024
+  num_classes: 3
+  batch_size: 16
+  epochs: 15
+  learning_rate: 0.0001
+  optimizer: adamw
+  weight_decay: 0.0001
+  num_workers: 0
+  device: auto
+  loss: cross_entropy
+  best_monitor: val_macro_f1
+  manifest_sha256: 0c641e3301196afa92c4cf7b7cad28dfd9e21c5f88a5ebbe02b694110b3b4b93
+  phase6_config: configs/etri_embedding.yaml
+  output_relative_path: checkpoints/phase7_ablation
+  gru:
+    hidden_size: 128
+    num_layers: 1
+    bidirectional: false
+    dropout: 0.0
+    batch_first: true
+    sequence_representation: final_hidden
+  mlflow:
+    enabled: true
+    tracking_uri: sqlite:///runtime/mlflow/mlflow.db
+    experiment_name: phase7_etri_2x2_ablation
+    artifact_relative_path: runtime/mlflow/artifacts/phase7

@@ -225,8 +225,32 @@ Phase 6 multi-clip preflight와 전체 239-clip cache 생성에 사용한 재현
 ```
 
 정상 cache만 resume하며, 손상되거나 provenance가 다른 기존 cache는 명시적으로 실패합니다.
-Phase 6 전체 239-clip cache와 validation gate는 PASS했으며, 현재 상태는
-`Phase 6 COMPLETE / Phase 7 READY TO START`입니다. 상세 결과와 warning은 `STATUS.md`를 따릅니다.
+Phase 6 전체 239-clip cache와 validation gate는 PASS했으며 Phase 6은 COMPLETE입니다.
+
+Phase 7 Stage B 2×2 ablation 구현의 학습 전 검증:
+
+```bash
+.venv/bin/python scripts/run_phase7_ablation.py --validate-only
+```
+
+Pre-run Independent Audit(`PASS_WITH_WARNINGS`) 이후 Mean/GRU 최소 smoke에 사용한 명령입니다.
+
+```bash
+.venv/bin/python scripts/run_phase7_ablation.py --experiment A --fold 0 --smoke --epochs 1 --no-mlflow
+.venv/bin/python scripts/run_phase7_ablation.py --experiment C --fold 0 --smoke --epochs 1 --no-mlflow
+```
+
+Mean/GRU smoke와 별도 MLflow smoke, smoke 이후 85-test regression은 모두 PASS했습니다.
+현재 상태는 `Phase 7 implementation COMPLETE / Phase 7 overall IN PROGRESS`이며 전체 20-run CV와
+Phase 8 구조 선택은 아직 수행하지 않았습니다.
+
+Phase 7 구현 commit/push 및 clean working tree 확인 후 정식 Full CV를 실행합니다.
+
+```bash
+.venv/bin/python scripts/run_phase7_ablation.py --all-experiments
+```
+
+상세 audit findings와 진행 상태는 `STATUS.md`를 따릅니다.
 
 ---
 
