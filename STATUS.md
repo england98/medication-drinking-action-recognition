@@ -3,8 +3,8 @@
 # Project Status
 
 - 프로젝트: `medication-drinking-action-recognition`
-- 현재 Phase: **Phase 5 — COMPLETE**
-- 다음 Phase: **Phase 6 — READY TO START**
+- 현재 Phase: **Phase 6 — COMPLETE**
+- 다음 Phase: **Phase 7 — READY TO START**
 - 최종 업데이트: 2026-08-30
 - 문서 성격: **현재 작업 상태의 Single Source of Truth**
 
@@ -29,7 +29,10 @@ hand-only partial의 작은 crop 문제를 원본 크기 기반 contextual ROI�
 최종 결과는 success 4, partial 60, fallback 0이며 ROI는 얼굴·상체·손과 행동 context를 보존했다.
 Phase 4 최종 판정은 **PASS_WITH_WARNINGS**다. Phase 5 Stage A 구현, GPU smoke, 본 학습,
 frame/video 평가, best checkpoint reload, Encoder A/B interface 검증 및 독립 Final Audit를
-완료했다. 최종 판정은 **PHASE 5 COMPLETE — READY FOR PHASE 6**이다.
+완료했다. 최종 판정은 **PHASE 5 COMPLETE — READY FOR PHASE 6**이다. Phase 6에서는
+Fixed ETRI Pilot 239개 전체에 대한 frozen Encoder A/B embedding cache 생성, full-cache
+validation gate 및 독립 Final Audit를 완료했다. 최종 상태는 **Phase 6 COMPLETE — Phase 7
+READY TO START**이다.
 
 현재 위치:
 
@@ -52,7 +55,9 @@ ROI Preflight               완료 (PASS_WITH_WARNINGS)
 ↓
 Stage A Visual Encoder      완료
 ↓
-ETRI Embedding              ← 다음
+ETRI Embedding Cache        완료 (PASS_WITH_WARNINGS)
+↓
+2×2 Ablation                ← 다음 (READY TO START)
 ```
 
 ---
@@ -223,6 +228,56 @@ MLflow run_id: ffb970c506c843e89b6613788c61a2c9
 MLflow per-epoch / best / final metrics 및 artifacts: PASS
 ```
 
+Phase 6 Embedding Preflight 결과:
+
+```text
+Independent audit: PASS_WITH_WARNINGS
+Full Cache Generation: READY_WITH_WARNINGS
+BLOCKER: 0 / MAJOR: 0
+A/B fairness: PASS
+1-clip GPU smoke: PASS
+source_clip_key: P201:A003:G006:H070
+participant/fold/class: P201 / 3 / 복약
+original/sample frames: 136 / 64
+ROI: success 0 / partial 64 / fallback 0
+Encoder A/B: [64,1024] / [64,1024]
+NaN/Inf: 0
+A/B frozen: true
+shared indices: PASS
+cache reload: PASS
+selected valid ETRI clips: 239
+manifest SHA-256: 0c641e3301196afa92c4cf7b7cad28dfd9e21c5f88a5ebbe02b694110b3b4b93
+```
+
+Phase 6 ETRI Embedding Cache 최종 결과:
+
+```text
+Full run: scripts.run_etri_embedding_cache --resume
+status: PASS
+validation_mode: full_239
+ETRI selected valid: 239
+cache: success 239 / failed 0 / created 227 / resumed 12
+T: 64
+D: 1024
+sampling: fixed_uniform
+inference_batch_size: 8
+Encoder A: torchvision MobileNet_V3_Small_Weights.DEFAULT / ImageNet-only
+Encoder B: stage-a-20260829T170113531051Z-adf86795/best.pt / best epoch 12
+Encoder A/B shape: [64,1024] / [64,1024]
+Encoder A/B NaN/Inf: 0
+A/B clip-key parity: PASS
+A/B frame-index parity: PASS
+Manifest/cache key-set parity: PASS
+ROI: success 0 / partial 15178 / fallback 118 / total 15296 = 239 × 64
+class: 기타 120 / 복약 59 / 음수 60
+fold: 48 / 48 / 48 / 48 / 47
+manifest SHA-256: 0c641e3301196afa92c4cf7b7cad28dfd9e21c5f88a5ebbe02b694110b3b4b93
+ROI config SHA-256: 7b692e3fa0260f745664869a58a958cf276d428cf693abda4449fcbadc71e381
+Stage A config SHA-256: 0987566c7175a408f4d72504e77c16ec835eba722a52a98a03fe62e204e4e54f
+Independent Final Audit: PASS_WITH_WARNINGS
+Phase 3/4/5 frozen artifact: unchanged
+```
+
 ---
 
 ## 4. 현재 해야 할 작업
@@ -332,14 +387,30 @@ Phase 3 Fixed Pilot Manifest 완료 항목:
 다음 작업:
 
 ```text
-Phase 6 — ETRI Embedding
+Phase 7 — 2×2 Ablation (READY TO START)
 ```
 
-Phase 6 진입 상태:
+Phase 6 최종 상태:
 
 ```text
-READY TO START
+COMPLETE — Full Cache PASS / Independent Final Audit PASS_WITH_WARNINGS
 ```
+
+Phase 6 현재 작업:
+
+- [x] T=64 fixed-uniform sampling 및 shared-frame contract 구현
+- [x] Phase 4 ROI 재사용과 frozen Encoder A/B embedding contract 구현
+- [x] temporary smoke cache/provenance/save-reload validation 구현
+- [x] Phase 6 unit test 구현
+- [x] 사용자 실제 ETRI Pilot 1-clip Encoder A/B smoke test PASS
+- [x] 독립 audit `PASS_WITH_WARNINGS` 및 full-cache readiness `READY_WITH_WARNINGS`
+- [x] audit minor finding provenance/frame-count/tests 보완
+- [x] full-cache entrypoint/resume/summary/validation gate 구현
+- [x] 사용자 multi-clip preflight 실행 및 결과 검토
+- [x] 사용자 전체 ETRI Pilot 239개 embedding cache 생성
+- [x] full-cache validation gate PASS
+- [x] Phase 6 independent Final Audit 완료
+- [x] Final audit findings P-1~P-4 closed
 
 ---
 
@@ -358,9 +429,9 @@ Phase 4  ROI Preflight              완료 (PASS_WITH_WARNINGS)
 ↓
 Phase 5  Stage A                    완료
 ↓
-Phase 6  ETRI Embedding             ← 다음
+Phase 6  ETRI Embedding             완료 (PASS_WITH_WARNINGS)
 ↓
-Phase 7  2×2 Ablation
+Phase 7  2×2 Ablation               다음 (READY TO START)
 ↓
 Phase 8  구조 선택
 ↓
@@ -398,6 +469,18 @@ Phase 5 warning / limitation:
 3. CUDA strict deterministic 미설정은 비차단 limitation이다.
 4. Encoder A는 별도 checkpoint 없이 torchvision ImageNet pretrained
    MobileNetV3-Small로 재구성하는 설계를 유지한다.
+```
+
+Phase 6 warning / limitation:
+
+```text
+1. ETRI Phase 6 전체 15,296 sampled frame에서 ROI는 success 0, partial 15,178,
+   fallback 118이었다. fallback rate는 약 0.77%다.
+2. 이는 Phase 4 frozen ROI policy에서 허용된 fallback이며 sample/frame은 삭제되지 않았다.
+3. Encoder A/B 모두 동일한 ROI 결과를 사용하므로 ImageNet-vs-AI-Hub 비교 조건을 오염시키지 않는다.
+4. Independent Final Audit 판정은 PASS_WITH_WARNINGS이다.
+5. Final audit findings P-1~P-4는 deterministic cache naming, full-run gate,
+   resume rejection, output-root/manifest mutation 회귀 테스트로 모두 closed 상태다.
 ```
 
 새로운 blocker, 검증 실패, 설계 변경 필요성이 발생하면 이 섹션을 즉시 갱신한다.

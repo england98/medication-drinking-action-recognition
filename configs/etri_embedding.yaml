@@ -1,0 +1,10 @@
+phase6:
+  sequence_length: 64
+  sampling_method: fixed_uniform
+  inference_batch_size: 8
+  device: auto
+  stage_a_config: configs/stage_a.yaml
+  roi_config: configs/roi_preflight.yaml
+  pilot_config: configs/pilot_manifest.yaml
+  encoder_b_checkpoint_relative_path: checkpoints/stage_a/stage-a-20260829T170113531051Z-adf86795/best.pt
+  full_cache_relative_path: embeddings/etri_pilot_t64_ab

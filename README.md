@@ -209,6 +209,25 @@ Phase 5 Stage A 구현과 사용자 실행 명령은 다음 문서에 정리되�
 docs/04_Phase5_Stage_A_실행_가이드.md
 ```
 
+Phase 6 ETRI embedding preflight의 실제 1-clip Encoder A/B smoke test:
+
+```bash
+.venv/bin/python -m scripts.run_etri_embedding_smoke --output /tmp/phase6-etri-embedding-smoke.pt
+```
+
+이 명령은 전체 cache를 만들지 않고 Fixed ETRI Pilot clip 1개만 T=64로 처리합니다.
+
+Phase 6 multi-clip preflight와 전체 239-clip cache 생성에 사용한 재현 명령:
+
+```bash
+.venv/bin/python -m scripts.run_etri_embedding_cache --limit 3 --resume
+.venv/bin/python -m scripts.run_etri_embedding_cache --resume
+```
+
+정상 cache만 resume하며, 손상되거나 provenance가 다른 기존 cache는 명시적으로 실패합니다.
+Phase 6 전체 239-clip cache와 validation gate는 PASS했으며, 현재 상태는
+`Phase 6 COMPLETE / Phase 7 READY TO START`입니다. 상세 결과와 warning은 `STATUS.md`를 따릅니다.
+
 ---
 
 ## 7. 주요 문서
