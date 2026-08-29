@@ -1,0 +1,25 @@
+phase5:
+  seed: 42
+  image_size: 224
+  batch_size: 16
+  epochs: 15
+  learning_rate: 0.0001
+  optimizer: adamw
+  weight_decay: 0.0001
+  num_workers: 0
+  device: auto
+  fine_tuning:
+    mode: last_n_blocks
+    last_n_blocks: 2
+  augmentation:
+    horizontal_flip_probability: 0.5
+    color_jitter: 0.10
+  output_relative_path: checkpoints/stage_a
+  mlflow:
+    enabled: true
+    tracking_uri: sqlite:///runtime/mlflow/mlflow.db
+    experiment_name: stage_a_visual_encoder
+    artifact_relative_path: runtime/mlflow/artifacts/stage_a
+  provenance:
+    roi_config: configs/roi_preflight.yaml
+    manifest_summary_relative_path: manifests/pilot/ai_hub_pilot_manifest_summary.json

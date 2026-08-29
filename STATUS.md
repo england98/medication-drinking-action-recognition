@@ -3,7 +3,7 @@
 # Project Status
 
 - 프로젝트: `medication-drinking-action-recognition`
-- 현재 Phase: **Phase 4 완료 — ROI Preflight PASS_WITH_WARNINGS / Phase 5 Stage A 진입 준비**
+- 현재 Phase: **Phase 5 — IMPLEMENTED / AWAITING USER SMOKE TEST AND TRAINING**
 - 최종 업데이트: 2026-08-29
 - 문서 성격: **현재 작업 상태의 Single Source of Truth**
 
@@ -26,7 +26,8 @@ hand-only partial의 작은 crop 문제를 원본 크기 기반 contextual ROI�
 않았다. no-face/no-hand 경로에 Pose contextual ROI를 추가하고 ETRI fallback 3-frame smoke를
 통과했다. 이후 사용자가 동일한 64-frame representative set을 재실행하고 visual review를 완료했다.
 최종 결과는 success 4, partial 60, fallback 0이며 ROI는 얼굴·상체·손과 행동 context를 보존했다.
-Phase 4 최종 판정은 **PASS_WITH_WARNINGS**이고 현재는 **Phase 5 Stage A 진입 준비 상태**다.
+Phase 4 최종 판정은 **PASS_WITH_WARNINGS**다. Phase 5 Stage A 코드와 자동 테스트 경로를
+구현했으며, 실제 GPU smoke test·batch size 확정·본 학습·평가를 기다리는 상태다.
 
 현재 위치:
 
@@ -47,7 +48,7 @@ Fixed Pilot Manifest        완료
 ↓
 ROI Preflight               완료 (PASS_WITH_WARNINGS)
 ↓
-Stage A Visual Encoder      ← 다음
+Stage A Visual Encoder      구현 완료 / 사용자 실행 대기
 ```
 
 ---
@@ -251,7 +252,15 @@ Phase 3 Fixed Pilot Manifest 완료 항목:
 
 현재 해야 할 작업:
 
-- [ ] Phase 5 — Stage A Visual Encoder 구현 범위 확인
+- [x] Phase 5 — Stage A Dataset / ROI preprocessing / MobileNetV3-Small 구현
+- [x] Stage A frame/video 평가, checkpoint provenance, MLflow logging 경로 구현
+- [x] Stage A unit/integration 자동 테스트 구현
+- [x] Phase 5 read-only audit 및 본 학습 전 필수 code fix 반영
+- [ ] 수정 후 final implementation audit
+- [ ] 사용자 실제 GPU smoke test 및 batch size 확정
+- [ ] Stage A 본 학습 및 frame/video evaluation
+- [ ] Encoder B best checkpoint 생성/reload 및 Encoder A/B interface 검증
+- [ ] Phase 5 final audit (완료 전 Phase 6 진입 금지)
 
 ---
 
@@ -273,20 +282,22 @@ Phase 3 Fixed Pilot Manifest 완료 항목:
 다음 작업:
 
 ```text
-Phase 5 — Stage A Visual Encoder
+Phase 5 code fix 검증
+→ final implementation audit
+→ 사용자 GPU smoke
+→ Stage A 본 학습 / 평가
+→ Phase 5 final audit
 ```
 
-Stage A 우선순위:
+Stage A 남은 순서:
 
 ```text
-1. Design Baseline의 Stage A 범위와 Fixed Pilot/ROI policy 확인
-2. docs/03_Model_Implementation_References.md의 Phase 5 구현 기준 확인
-3. AI-Hub viewpoint_3 Dataset/DataLoader 및 preprocessing 설계
-4. MobileNetV3-Small ImageNet pretrained frame classifier 구현
-5. actor-disjoint split 기반 학습·평가 및 encoder checkpoint 정의
+1. code fix 자동 검증 및 final implementation audit
+2. 사용자 GPU smoke test와 batch size 확정
+3. Stage A 본 학습 및 frame/video evaluation
+4. Encoder B best checkpoint reload와 Encoder A/B interface 검증
+5. Phase 5 final audit
 ```
-
-모델 구현은 Manifest 단계 이후에 진행한다.
 
 ---
 
@@ -303,7 +314,7 @@ Phase 3  Fixed Pilot Manifest       완료
 ↓
 Phase 4  ROI Preflight              완료 (PASS_WITH_WARNINGS)
 ↓
-Phase 5  Stage A                    ← 다음
+Phase 5  Stage A                    구현 완료 / 사용자 실행 전 audit 대기
 ↓
 Phase 6  ETRI Embedding
 ↓

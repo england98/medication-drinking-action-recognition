@@ -203,6 +203,12 @@ MediaPipe Tasks 초기화에는 WSL의 `libGLESv2.so.2`가 필요합니다. 누�
 report는 Working Data의 `roi_preflight/`에 생성됩니다. 통계와 visual review 후 사용자가
 PASS 여부를 판단하기 전까지 전체 Pilot preprocessing을 시작하지 않습니다.
 
+Phase 5 Stage A 구현과 사용자 실행 명령은 다음 문서에 정리되어 있습니다.
+
+```text
+docs/04_Phase5_Stage_A_실행_가이드.md
+```
+
 ---
 
 ## 7. 주요 문서
