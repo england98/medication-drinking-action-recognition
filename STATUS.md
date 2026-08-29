@@ -3,7 +3,7 @@
 # Project Status
 
 - 프로젝트: `medication-drinking-action-recognition`
-- 현재 Phase: **Phase 0 — Repository Baseline**
+- 현재 Phase: **Phase 1 — 프로젝트 골격**
 - 최종 업데이트: 2026-08-29
 - 문서 성격: **현재 작업 상태의 Single Source of Truth**
 
@@ -11,8 +11,8 @@
 
 ## 1. 현재 상태
 
-개발환경 구축과 상위 설계 정리는 완료되었으며,
-현재는 **첫 Git baseline commit을 만들기 위한 Repository Baseline 단계**다.
+개발환경, Data Readiness, Git Repository Baseline 구축이 완료되었다.
+현재는 **Full Candidate Inventory 구현 전 최소 프로젝트 골격을 준비하는 Phase 1**이다.
 
 현재 위치:
 
@@ -23,9 +23,9 @@
 ↓
 Repository 정리
 ↓
-Git baseline 검증 / commit   ← 현재
+Git baseline 검증 / commit
 ↓
-Phase 1 프로젝트 골격
+Phase 1 프로젝트 골격       ← 현재
 ↓
 Full Candidate Inventory
 ```
@@ -80,6 +80,20 @@ Full Candidate Inventory
 - [x] `STATUS.md` 역할 정리
 - [x] Data Readiness Audit 완료
 
+### Git Repository Baseline
+
+- [x] Git repository 초기화
+- [x] branch `main` 확인
+- [x] `git status` 확인
+- [x] `.gitignore` 실제 동작 검증
+- [x] `.venv/` ignore 확인
+- [x] `runtime/` / `runtime/mlflow/mlflow.db` ignore 확인
+- [x] `configs/paths.local.yaml` ignore 확인
+- [x] `git add -n .` staging dry-run 검증
+- [x] 대용량 데이터 / runtime 산출물 staging 제외 확인
+- [x] baseline commit 완료: `d7a6101 chore: establish pilot project baseline`
+- [x] Phase 0 — Repository Baseline 완료
+
 ---
 
 ## 3. 최근 검증 결과
@@ -127,54 +141,48 @@ Working: READY
 - Working Root는 read 및 소형 임시 파일 write/delete test를 통과했다.
 - AI-Hub Raw / ETRI Raw / Working Root는 canonical path 기준으로 서로 분리되며 symlink가 아니다.
 
+Git Repository Baseline 검증 결과:
+
+```text
+repository: initialized
+branch: main
+ignore rules: PASS
+staging dry-run: PASS
+baseline commit: d7a6101 chore: establish pilot project baseline
+Phase 0: COMPLETE
+```
+
 ---
 
 ## 4. 현재 해야 할 작업
 
-Phase 0의 남은 작업:
+Phase 1의 현재 작업:
 
-- [ ] `git init -b main`
-- [ ] `git status` 확인
-- [ ] `git check-ignore`로 ignore 규칙 검증
-- [ ] `.venv/` ignore 확인
-- [ ] `runtime/` ignore 확인
-- [ ] `configs/paths.local.yaml` ignore 확인
-- [ ] `git add -n .` staging dry-run 확인
-- [ ] 불필요한 대용량 / runtime 파일이 staging되지 않는지 확인
-- [ ] 첫 baseline commit
-
-예정 commit message:
-
-```text
-chore: establish pilot project baseline
-```
-
-> Git commit은 `AGENTS.md` 규칙에 따라 사용자 승인/실행 범위를 준수한다.
+- [ ] `configs/`, `manifests/`, `scripts/`, `src/`, `tests/` 최소 골격 확정
+- [ ] `configs/paths.local.yaml` loader 및 schema validation 구현 범위 확정
+- [ ] Raw input / Working output 분리 안전장치 구현 범위 확정
+- [ ] Phase 2 Full Candidate Inventory 구현을 위한 공통 구조 준비
 
 ---
 
-## 5. Phase 0 완료 기준
+## 5. Phase 0 완료 결과
 
-다음을 모두 만족하면 Phase 0 완료:
+다음 기준을 모두 만족하여 Phase 0을 완료했다.
 
-- [ ] Git repository 초기화
-- [ ] `.gitignore` 검증 PASS
-- [ ] `.venv/` / `runtime/` / local path config ignore 확인
-- [ ] staging dry-run PASS
-- [ ] 대용량 데이터 / runtime 산출물 staging 없음
-- [ ] baseline commit 완료
-
-Phase 0 완료 즉시 이 문서의 현재 Phase를 다음 단계로 갱신한다.
+- [x] Git repository 초기화
+- [x] `.gitignore` 검증 PASS
+- [x] `.venv/` / `runtime/` / local path config ignore 확인
+- [x] staging dry-run PASS
+- [x] 대용량 데이터 / runtime 산출물 staging 없음
+- [x] baseline commit 완료
 
 ---
 
 ## 6. 다음 작업
 
-Phase 0 완료 후:
+Phase 1 완료 후:
 
 ```text
-Phase 1 — 프로젝트 골격
-↓
 Phase 2 — Full Candidate Inventory
 ```
 
@@ -195,9 +203,9 @@ Full Candidate Inventory 우선순위:
 ## 7. Pilot 전체 진행 순서
 
 ```text
-Phase 0  Repository Baseline          ← 현재
+Phase 0  Repository Baseline          완료
 ↓
-Phase 1  프로젝트 골격
+Phase 1  프로젝트 골격            ← 현재
 ↓
 Phase 2  Full Candidate Inventory
 ↓
