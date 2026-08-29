@@ -223,6 +223,15 @@ docs/01_개발환경_구축_기록.md
 
 현재 Python / WSL / GPU / CUDA / 경로 / MLflow 환경 기준을 기록합니다.
 
+### 모델 구현 Reference
+
+```text
+docs/03_Model_Implementation_References.md
+```
+
+Phase 5~10의 모델·학습·평가·inference 구현에서 사용할 PyTorch / torchvision 공식 API와
+승인된 외부 GitHub Reference의 참고·채택 범위를 정의합니다.
+
 ### Coding Agent 지침
 
 ```text
@@ -247,6 +256,7 @@ STATUS.md
 | `README.md` | 프로젝트의 안정적인 개요 |
 | `STATUS.md` | 현재 작업 진행 상태 |
 | `docs/00_Pilot_Design_Baseline.md` | Pilot 상위 설계 기준 |
+| `docs/03_Model_Implementation_References.md` | Phase 5~10 모델 구현 공식 API·외부 Reference 기준 |
 
 일상적인 작업 진행에 따라서는 `STATUS.md`를 갱신하고, 프로젝트 규칙·구조·사용법 자체가 변경될 때만 `AGENTS.md` 또는 `README.md`를 수정합니다.
 

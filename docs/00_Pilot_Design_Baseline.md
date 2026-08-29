@@ -121,6 +121,8 @@ CNN과 temporal model을 한 번에 공동 최적화하는 **end-to-end video tr
 - 의미 있는 설계 변경은 기존 문서를 덮어쓰기보다 **새 버전 또는 변경 문서**로 기록
 - 단순 오타·링크·표현 정리는 기존 문서 수정 가능
 - `README.md`, `AGENTS.md`, `STATUS.md`는 최신 상태를 유지하는 living document
+- 모델·학습·평가·inference의 세부 구현 Reference는 `docs/03_Model_Implementation_References.md`에서 관리하며, 해당 문서는 본 Design Baseline의 설계를 변경하지 않는다.
+- 외부 구현 Reference와 본 문서가 충돌하면 본 Design Baseline의 설계 기준을 우선한다.
 - 실험 결과는 별도 결과 문서와 MLflow에 기록
 - 변경 문서에는 가능하면 `변경 전 / 변경 후 / 이유 / 영향 범위 / 적용 시점`을 남긴다
 
@@ -150,7 +152,10 @@ CNN과 temporal model을 한 번에 공동 최적화하는 **end-to-end video tr
 - 개발환경 구축 기록 문서 작성
 - 최종 Design Baseline 검토
 
-## 1.2 개발 시작 직전 남은 작업
+## 1.2 Baseline 확정 시점의 개발 시작 전 상태
+
+아래 내용은 본 Design Baseline을 최초 확정했을 당시의 개발 시작 전 상태를 기록한 것이다.
+최신 Phase, 완료 작업, 현재 작업, 다음 작업은 `STATUS.md`를 Single Source of Truth로 사용한다.
 
 ```text
 최종 Design Baseline을 docs/에 배치
@@ -242,6 +247,8 @@ configs/
 ├── docs/
 │   ├── 00_Pilot_Design_Baseline.md
 │   ├── 01_개발환경_구축_기록.md
+│   ├── 02_데이터_경로_및_Data_Readiness_검증_기록.md
+│   ├── 03_Model_Implementation_References.md
 │   └── AI-Hub / ETRI 구조·EDA reference
 ├── manifests/
 ├── scripts/
@@ -1871,9 +1878,13 @@ self_recorded
 
 - `00_Pilot_Design_Baseline.md` — 본 문서
 - `01_개발환경_구축_기록.md`
+- `02_데이터_경로_및_Data_Readiness_검증_기록.md` — Phase 0 Raw Data / Working Root readiness audit 및 경로 안전성 검증 기록
+- `03_Model_Implementation_References.md` — 모델·학습·평가·inference 구현 시 사용할 공식 API와 승인된 외부 Reference의 참고 범위 정의
 - AI-Hub 데이터 구조 문서
 - AI-Hub EDA 문서
 - ETRI 데이터 구조 문서
 - ETRI 복약/물마시기/기타 EDA 문서
 
-이 문서를 Git 첫 기준선 commit 시점의 공식 Pilot 설계 기준으로 사용한다.
+본 문서는 Git 첫 기준선 commit에서 확정된 공식 Pilot 설계 기준으로 유지한다.
+최신 작업 진행 상태는 `STATUS.md`, 모델 구현의 세부 Reference 기준은
+`docs/03_Model_Implementation_References.md`를 확인한다.

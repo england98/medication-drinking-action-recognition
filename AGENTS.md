@@ -5,6 +5,7 @@
 - 프로젝트: `medication-drinking-action-recognition`
 - 상위 기준 문서: `docs/00_Pilot_Design_Baseline.md`
 - 개발환경 기록: `docs/01_개발환경_구축_기록.md`
+- 모델 구현 Reference: `docs/03_Model_Implementation_References.md`
 - 문서 성격: **안정적인 Coding Agent 정책 문서 (필요 시에만 갱신)**
 - 최종 정리일: 2026-08-29
 
@@ -28,15 +29,26 @@ docs/00_Pilot_Design_Baseline.md
 docs/01_개발환경_구축_기록.md
 ```
 
+모델·학습·평가·inference 관련 코드 구현 시 사용할 공식 API와 외부 Reference의
+우선순위·참고 범위는 다음 문서를 따른다.
+
+```text
+docs/03_Model_Implementation_References.md
+```
+
+`03_Model_Implementation_References.md`는 구현 보조 기준이며
+Design Baseline의 모델·데이터·평가 정책을 변경하지 않는다.
+
 이 문서와 상위 기준 문서가 충돌하면 다음 우선순위를 따른다.
 
 ```text
 1. 사용자의 현재 명시적 지시
 2. docs/00_Pilot_Design_Baseline.md
 3. AGENTS.md
-4. STATUS.md        # 현재 작업 상태 / 다음 작업
-5. README.md        # 프로젝트의 안정적인 개요
-6. 구현 편의상 가정
+4. docs/03_Model_Implementation_References.md   # 모델·학습·평가·inference 작업 시
+5. STATUS.md        # 현재 작업 상태 / 다음 작업
+6. README.md        # 프로젝트의 안정적인 개요
+7. 구현 편의상 가정
 ```
 
 상위 설계를 임의로 변경하지 않는다.
@@ -495,6 +507,37 @@ AI-Hub Fine-tuned Encoder
 
 ETRI encoder fine-tuning은 1차 Pilot 필수 범위가 아니다.
 
+
+## 10.4 모델 구현 Reference 사용 규칙
+
+모델·학습·평가·inference 관련 코드를 작성하거나 수정할 때는 반드시 다음 문서를 확인한다.
+
+```text
+docs/03_Model_Implementation_References.md
+```
+
+구현 Reference 사용 원칙:
+
+- PyTorch / torchvision 공식 API와 공식 문서를 Primary implementation source로 사용한다.
+- 승인된 외부 GitHub repository는 `03_Model_Implementation_References.md`에 명시된 범위에서만 참고한다.
+- 외부 repository의 architecture, dataset split, class taxonomy, loss, threshold, preprocessing을 현재 Pilot에 자동 적용하지 않는다.
+- 외부 Reference가 Design Baseline과 충돌하면 Design Baseline을 우선한다.
+- 현재 Pilot의 Stage A / Stage B interface와 기존 project config / tests를 외부 코드보다 우선한다.
+- 외부 코드의 직접 재사용이 필요한 경우 repository, source file, license, revision/commit SHA, 사용 위치와 변형 범위를 기록한다.
+- 외부 Reference에서 더 나은 후보를 발견했지만 현재 Baseline 범위를 벗어나는 경우 임의 적용하지 않고 후속 실험 후보 또는 limitation으로 기록한다.
+
+현재 Pilot의 핵심 interface:
+
+```text
+Stage A Input  : [B, 3, H, W]
+Stage A Output : [B, D]
+Stage B Input  : [B, T, D]
+Stage B Output : [B, 3]
+```
+
+이 interface를 변경해야 할 필요성이 발견되면 Coding Agent가 임의 변경하지 않고
+변경 사유와 영향 범위를 먼저 보고한다.
+
 ---
 
 # 11. 2×2 Ablation 기준
@@ -618,14 +661,26 @@ Coding Agent는 새 작업을 시작할 때 다음 순서를 따른다.
 1. 현재 요청 확인
 2. docs/00_Pilot_Design_Baseline.md 관련 항목 확인
 3. STATUS.md 현재 Phase 확인
-4. 필요한 기존 코드/문서 확인
-5. 변경 범위 최소화
-6. 코드 작성
-7. 짧은 검증
-8. 변경 내용 보고
-9. 사용자 실행 명령 제공
-10. 예상 산출물 / PASS 기준 제공
+4. 모델·학습·평가·inference 작업이면 docs/03_Model_Implementation_References.md 확인
+5. 필요한 기존 코드 / config / tests / 문서 확인
+6. 변경 범위 최소화
+7. 코드 작성
+8. 짧은 검증
+9. 변경 내용 보고
+10. 사용자 실행 명령 제공
+11. 예상 산출물 / PASS 기준 제공
 ```
+
+모델 관련 작업에서는 외부 GitHub를 먼저 보고 현재 설계를 역으로 맞추지 않는다.
+
+```text
+Design Baseline
+→ 현재 project interface / tests
+→ 공식 PyTorch / torchvision
+→ 승인된 외부 Reference
+```
+
+순서로 구현 근거를 확인한다.
 
 ---
 
@@ -678,6 +733,26 @@ Coding Agent는 새 작업을 시작할 때 다음 순서를 따른다.
 ...
 ```
 
+## Implementation Reference 사용 기록
+
+모델·학습·평가·inference 관련 작업인 경우 가능하면 다음을 기록한다.
+
+```text
+Primary implementation source:
+- PyTorch / torchvision official API 등
+
+External references consulted:
+- repository / relevant concept 또는 module
+- ADAPT한 범위
+
+Not adopted:
+- 확인했지만 현재 Pilot 범위상 적용하지 않은 항목
+
+Direct reuse:
+- 없으면 none
+- 있으면 repository / source file / license / revision / 변형 범위
+```
+
 ## Living Document 갱신
 
 ```text
@@ -706,6 +781,7 @@ AGENTS.md: 사용자 승인 후 수정 / 수정 불필요
 | `README.md` | 프로젝트의 안정적인 개요 | 구조·사용법·주요 인터페이스가 바뀔 때만 |
 | `STATUS.md` | 현재 작업 진행 상태의 **Single Source of Truth** | 실제 작업 상태가 바뀔 때 |
 | `docs/00_Pilot_Design_Baseline.md` | Pilot 상위 설계 기준 | 의미 있는 설계 변경 시 새 버전/변경 문서 우선 |
+| `docs/03_Model_Implementation_References.md` | 모델 구현 공식 API·외부 Reference 범위 | 구현 Reference가 바뀔 때 갱신, Baseline 변경 용도로 사용 금지 |
 | EDA / 데이터 구조 / 환경 기록 | 기준 시점의 Reference | 원칙적으로 보존 |
 
 일상적인 진행 상황은 `README.md`나 `AGENTS.md`에 중복 기록하지 않고 `STATUS.md`에서만 관리한다.

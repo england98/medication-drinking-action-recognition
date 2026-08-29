@@ -280,9 +280,10 @@ Stage A 우선순위:
 
 ```text
 1. Design Baseline의 Stage A 범위와 Fixed Pilot/ROI policy 확인
-2. AI-Hub viewpoint_3 Dataset/DataLoader 및 preprocessing 설계
-3. MobileNetV3-Small ImageNet pretrained frame classifier 구현
-4. actor-disjoint split 기반 학습·평가 및 encoder checkpoint 정의
+2. docs/03_Model_Implementation_References.md의 Phase 5 구현 기준 확인
+3. AI-Hub viewpoint_3 Dataset/DataLoader 및 preprocessing 설계
+4. MobileNetV3-Small ImageNet pretrained frame classifier 구현
+5. actor-disjoint split 기반 학습·평가 및 encoder checkpoint 정의
 ```
 
 모델 구현은 Manifest 단계 이후에 진행한다.
@@ -346,6 +347,12 @@ docs/00_Pilot_Design_Baseline.md
 
 ```text
 docs/01_개발환경_구축_기록.md
+```
+
+모델 구현 Reference:
+
+```text
+docs/03_Model_Implementation_References.md
 ```
 
 Coding Agent 작업 규칙:
