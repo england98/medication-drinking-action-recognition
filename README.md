@@ -227,30 +227,43 @@ Phase 6 multi-clip preflight와 전체 239-clip cache 생성에 사용한 재현
 정상 cache만 resume하며, 손상되거나 provenance가 다른 기존 cache는 명시적으로 실패합니다.
 Phase 6 전체 239-clip cache와 validation gate는 PASS했으며 Phase 6은 COMPLETE입니다.
 
-Phase 7 Stage B 2×2 ablation 구현의 학습 전 검증:
+Phase 7 Stage B 2×2 ablation 검증 진입점:
 
 ```bash
 .venv/bin/python scripts/run_phase7_ablation.py --validate-only
 ```
 
-Pre-run Independent Audit(`PASS_WITH_WARNINGS`) 이후 Mean/GRU 최소 smoke에 사용한 명령입니다.
+Pre-run Independent Audit 이후 Mean/GRU 최소 smoke에 사용한 명령입니다.
 
 ```bash
 .venv/bin/python scripts/run_phase7_ablation.py --experiment A --fold 0 --smoke --epochs 1 --no-mlflow
 .venv/bin/python scripts/run_phase7_ablation.py --experiment C --fold 0 --smoke --epochs 1 --no-mlflow
 ```
 
-Mean/GRU smoke와 별도 MLflow smoke, smoke 이후 85-test regression은 모두 PASS했습니다.
-현재 상태는 `Phase 7 implementation COMPLETE / Phase 7 overall IN PROGRESS`이며 전체 20-run CV와
-Phase 8 구조 선택은 아직 수행하지 않았습니다.
+Mean/GRU/MLflow smoke와 정식 A/B/C/D × 5-fold CV를 완료했습니다. Production run은 20/20
+FINISHED, participant leakage는 0이며 A/B/C/D OOF는 각각 239개 exact-once입니다. Post-run
+Independent Final Audit은 `PASS_WITH_WARNINGS`이고 metric 독립 재계산은 exact match했습니다.
 
-Phase 7 구현 commit/push 및 clean working tree 확인 후 정식 Full CV를 실행합니다.
+5-fold Macro-F1 mean ± std:
+
+```text
+A: 0.4507 ± 0.0794
+B: 0.4491 ± 0.0874
+C: 0.5190 ± 0.0420
+D: 0.5322 ± 0.0546
+```
+
+현재 상태는 `Phase 7 COMPLETE / Phase 8 READY TO START`입니다. Winner는 아직 선택하지 않았으며
+구조 선택은 Phase 8에서 수행합니다. 상세 결과와 limitation은 `STATUS.md`를 따릅니다.
+
+정식 Full CV에 사용한 실행 명령:
 
 ```bash
 .venv/bin/python scripts/run_phase7_ablation.py --all-experiments
 ```
 
-상세 audit findings와 진행 상태는 `STATUS.md`를 따릅니다.
+다음 단계는 `Phase 8 — Structure Selection`입니다. Primary metric은 5-fold mean Macro-F1이며,
+secondary 기준은 복약/음수 Recall, std, model simplicity, latency/memory입니다.
 
 ---
 
