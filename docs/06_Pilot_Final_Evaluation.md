@@ -4,7 +4,7 @@
 
 - 작성일: 2026-08-30
 - 평가 대상: ETRI Batch B Fixed Pilot Manifest
-- 문서 상태: **READY FOR INDEPENDENT PHASE 10 FINAL AUDIT**
+- 문서 상태: **FINAL — Phase 10 COMPLETE / 1st Pilot COMPLETE**
 - 상위 설계 기준: `docs/00_Pilot_Design_Baseline.md`
 - 정량 평가 명칭: **ETRI Batch B Pilot participant-disjoint 5-fold raw-video OOF End-to-End evaluation**
 
@@ -37,8 +37,12 @@ Self-recorded 3개 영상도 Phase 9 single deployment/check model로 CUDA End-t
 
 핵심 한계는 untouched final test 부재, CV를 선택과 성능 추정에 함께 사용한 점, 낮은 복약/음수
 recall, 239개 Pilot subset, 대부분 partial ROI, ETRI domain에서 encoder를 fine-tune하지 않은 점,
-외부·cross-batch 일반화 미검증이다. 현재 상태는 **READY FOR INDEPENDENT PHASE 10 FINAL AUDIT**이며
-Phase 10 COMPLETE 또는 Pilot COMPLETE를 선언하지 않는다.
+외부·cross-batch 일반화 미검증이다. Independent Phase 10 Final Audit의 초기 verdict는
+**PASS WITH REQUIRED FIXES**였고, BLOCKER는 0이었다. AI-Hub actor population 표현을
+selected Pilot 192명과 candidate-pool split population 202명으로 구분하는 required documentation
+fix 1건을 반영해 completion requirements를 충족했다. 따라서 현재 상태는 **Phase 10
+COMPLETE / 1st Pilot COMPLETE**다. 이는 Baseline이 정의한 1차 Pilot 구현·평가·검증 절차의
+완료이며 production, clinical performance 또는 광범위한 일반화 성능 달성을 뜻하지 않는다.
 
 # 2. Pilot Objective and Scope
 
@@ -452,24 +456,18 @@ threshold 또는 preprocessing을 변경하지 않았다.
 - broad real-world generalization
 - self-recorded quantitative performance
 
-# 18. Pilot Completion Readiness
+# 18. Pilot Completion Status
 
-현재 verdict는 **READY FOR INDEPENDENT PHASE 10 FINAL AUDIT**다. 이 문서는 Phase 10 COMPLETE 또는
-Pilot COMPLETE를 선언하지 않는다.
+Independent Phase 10 Final Audit을 완료했다. 초기 verdict는 **PASS WITH REQUIRED FIXES**였으며,
+BLOCKER 0, required documentation fix 1건은 AI-Hub actor population 표현을 selected Pilot
+192명과 candidate-pool split population 202명으로 구분하는 내용이었다. 해당 fix를 반영해
+completion requirements를 충족했으며, 최종 상태는 **Phase 10 COMPLETE / 1st Pilot
+COMPLETE**다.
 
-Audit와 최종 동기화 전에 확인할 절차:
-
-1. 전체 tests 결과 확인
-2. `git diff --check`
-3. `git status`와 intended file set 검토
-4. Independent Phase 10 Final Audit
-5. Audit PASS 후 README / STATUS synchronization
-6. 최종 tests
-7. 사용자 승인 범위에 따른 commit / push
-8. clean working tree 확인
-
-현재 알려진 최신 regression은 113 tests PASS, failed 0, skipped 0이며 이 문서 작성 작업에서는 새
-평가나 전체 test를 재실행하지 않았다.
+현재 알려진 최신 regression은 113 tests PASS, failed 0, skipped 0이다. Pilot COMPLETE는
+Baseline에서 정의한 1차 Pilot 구현·평가·검증 절차를 완료했다는 뜻이며, untouched
+independent final test, Phase 9 deployment model independent-test performance, production/clinical 성능
+또는 광범위한 일반화 성능을 주장하지 않는다.
 
 # 19. Artifact References
 
@@ -501,7 +499,7 @@ Audit와 최종 동기화 전에 확인할 절차:
 - `configs/phase8_selected_model.yaml`의 `phase9.deployment_checkpoint_created: false`는 Phase 9 실행 전
   handoff 상태다. 현재 존재하는 Phase 9 checkpoint provenance, MLflow FINISHED run과 STATUS를 우선해
   Phase 9 checkpoint가 생성된 것으로 판단했다.
-- STATUS에는 Phase 10 시작 전 상태가 유지되어 있다. 사용자 지시에 따라 이 문서 작성 시 STATUS를
-  갱신하지 않았으며, 현재 Phase 10 artifact 사실은 machine-readable evaluation 결과를 우선했다.
+- `STATUS.md`는 Independent Phase 10 Final Audit과 required documentation fix 반영 후 Phase 10 COMPLETE /
+  1st Pilot COMPLETE 상태로 동기화되어 있다.
 - Self-recorded artifact는 이전 raw OOF 작업 종료 후 workspace에 추가됐다. 이 문서는 현재 존재하는
   JSON 3개를 직접 읽어 기록했다.

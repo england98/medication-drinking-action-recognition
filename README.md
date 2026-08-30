@@ -19,9 +19,15 @@ Baseline에서 정의한 구현·평가·검증 절차를 완주하여 **Phase 1
 → Stage B Clip Classifier
 → 2×2 Ablation
 → participant-disjoint 5-fold CV
+→ model selection
 → deployment/check model
+→ raw-video OOF End-to-End evaluation
+   (Experiment D fold-specific held-out checkpoints)
 → ETRI + self_recorded inference pipeline check
 ```
+
+여기서 End-to-End는 CNN과 temporal model의 joint training이 아니라, raw video 입력부터
+3-class 출력까지의 전체 inference path를 의미합니다.
 
 최종 출력 class:
 
@@ -256,9 +262,9 @@ Pre-run Independent Audit 이후 Mean/GRU 최소 smoke에 사용한 명령입니
 .venv/bin/python scripts/run_phase7_ablation.py --experiment C --fold 0 --smoke --epochs 1 --no-mlflow
 ```
 
-Mean/GRU/MLflow smoke와 정식 A/B/C/D × 5-fold CV를 완료했습니다. Production run은 20/20
-FINISHED, participant leakage는 0이며 A/B/C/D OOF는 각각 239개 exact-once입니다. Post-run
-Independent Final Audit은 `PASS_WITH_WARNINGS`이고 metric 독립 재계산은 exact match했습니다.
+Mean/GRU/MLflow smoke와 정식 A/B/C/D × 5-fold CV를 완료했습니다. 정식 A/B/C/D × 5-fold
+CV run은 20/20 FINISHED했으며, participant leakage는 0이고 A/B/C/D OOF는 각각 239개
+exact-once입니다. 상세 실행 및 Audit 이력은 `STATUS.md`를 따릅니다.
 
 5-fold Macro-F1 mean ± std:
 
@@ -303,6 +309,25 @@ Phase 9 — Pilot Deployment/Check Model은 완료되었습니다. Frozen Encode
 
 Phase 9 training metric은 training diagnostic일 뿐 공식 정량 성능이 아닙니다. 공식 정량평가는
 **ETRI Batch B Fixed Pilot participant-disjoint 5-fold raw-video OOF End-to-End evaluation**입니다.
+이 평가는 Phase 9 deployment/check model이 아니라 Experiment D의 Phase 7 fold 0~4 held-out
+checkpoint를 사용합니다.
+
+Phase 10 단일 영상 inference 진입점:
+
+```bash
+.venv/bin/python scripts/run_inference.py "<video.mp4>" \
+  --output-json "<work_root>/evaluations/phase10_recheck/<name>.json"
+```
+
+Phase 10 raw-video OOF 재검증 진입점:
+
+```bash
+.venv/bin/python scripts/run_phase10_raw_video_oof.py \
+  --output-root "<work_root>/evaluations/phase10_raw_video_oof_recheck"
+```
+
+완료된 Pilot artifact를 보존하기 위해 기존 공식 output은 덮어쓰지 않으며, 재검증이
+필요한 경우 위와 같이 `<work_root>` 안의 별도 output 위치를 사용합니다.
 
 Phase 10 결과:
 
@@ -314,8 +339,10 @@ Phase 10 결과:
 - Probability는 max absolute difference `1.2517e-6`의 미세 차이가 있어 stored verdict
   `DIFFERENCE_OBSERVED`를 유지
 - Raw-video OOF는 CPU, self-recorded 3-class pipeline check는 CUDA에서 실행
-- Self-recorded 3개 모두 label/confidence 생성과 전체 경로가 정상 동작했으나, 이는 정성적 기능
-  검증일 뿐 accuracy가 아님
+- Self-recorded 3개 모두 label/confidence 생성과 전체 inference path가 정상 동작했습니다.
+  다만 세 영상 모두 `기타`로 예측되어 복약·음수 sample은 intended class와 일치하지
+  않았으며, 이는 기능적 연결 확인을 위한 qualitative check일 뿐 accuracy나 일반화 성능의
+  근거로 사용하지 않습니다.
 
 핵심 limitation은 untouched independent final test 부재, 낮은 복약/음수 Recall, 239개 Pilot subset의
 작은 규모, ETRI에서 frozen encoder 사용, 대부분 partial인 ROI, external/cross-batch generalization
