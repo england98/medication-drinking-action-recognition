@@ -66,9 +66,14 @@ Input Video
 
 ## 3. Data
 
-### AI-Hub
+### AI-Hub — 일상생활 영상 데이터
 
-Stage A visual encoder 학습에 사용했습니다.
+- Official dataset: **일상생활 영상 데이터 (Personal Informative Visual Lifelogging Data For AI Learning)**
+- Source: [AI-Hub 공식 데이터셋 페이지](https://www.aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&aihubDataSe=data&dataSetSn=648)
+- 한국인의 다양한 일상생활 행동을 1인칭 및 3인칭 영상으로 구축한 Action Recognition 데이터셋입니다.
+- 이 프로젝트에서는 로컬 라벨링데이터의 `viewpoint_3`에서 선정한 Pilot subset을 Stage A visual encoder 학습에 사용했습니다.
+
+Stage A visual encoder 학습 기준:
 
 - `viewpoint_3` only
 - actor-disjoint split
@@ -81,7 +86,12 @@ AI-Hub 음수 데이터는 손-용기-입의 시각 특징을 학습하기 위�
 
 ### ETRI-Activity3D-LivingLab
 
-Stage B clip-level classifier 학습과 정량 평가에 사용했습니다.
+- Official dataset: **ETRI-Activity3D-LivingLab**
+- Source: [ETRI Eg-Retrix 공식 데이터셋 페이지](https://epretx.etri.re.kr/dataDetail?lang=ko&id=183)
+- 실제 거주 환경에서 고령자의 일상행동을 인식하기 위해 구축된 RGB-D 기반 LivingLab 데이터셋입니다.
+- 이 프로젝트에서는 **Batch B의 RGB 데이터**에서 구성한 Fixed Pilot subset을 Stage B classifier 학습과 participant-disjoint 정량 평가에 사용했습니다.
+
+Stage B 및 평가 기준:
 
 - Batch B only
 - Fixed Pilot selected-valid subset: 239 clips / 30 participants
@@ -94,6 +104,10 @@ Stage B clip-level classifier 학습과 정량 평가에 사용했습니다.
 직접 촬영한 3개 영상은 전체 inference path와 label/confidence 생성을 확인하는 functional/qualitative check에만 사용했습니다. 세 영상 모두 pipeline 실행에는 성공했지만 모두 `기타`로 예측되어 복약·음수 intended sample은 일치하지 않았습니다.
 
 Self-recorded 데이터는 학습, validation, model selection, tuning 또는 성능 지표 산출에 사용하지 않았으며 accuracy나 일반화 성능의 근거가 아닙니다.
+
+> **Data availability**
+>
+> AI-Hub 및 ETRI 원본 데이터는 이 repository에 포함하지 않습니다. 원본 데이터가 필요한 경우 각 제공기관의 공식 데이터셋 페이지에서 별도로 획득해야 하며, 다운로드 및 사용 시 각 제공처의 이용 조건을 따라야 합니다.
 
 ## 4. Pilot Results
 
