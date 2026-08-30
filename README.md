@@ -253,8 +253,10 @@ C: 0.5190 ± 0.0420
 D: 0.5322 ± 0.0546
 ```
 
-현재 상태는 `Phase 7 COMPLETE / Phase 8 READY TO START`입니다. Winner는 아직 선택하지 않았으며
-구조 선택은 Phase 8에서 수행합니다. 상세 결과와 limitation은 `STATUS.md`를 따릅니다.
+현재 상태는 `Phase 8 COMPLETE / Phase 9 READY TO START`입니다. Phase 8은 고정된 5-fold mean
+Macro-F1 기준으로 Experiment D(AI-Hub fine-tuned Encoder + GRU)를 선택했습니다. Machine-readable
+handoff는 `configs/phase8_selected_model.yaml`, 상세 근거는
+`docs/05_Phase8_Structure_Selection_Result.md`에 있습니다.
 
 정식 Full CV에 사용한 실행 명령:
 
@@ -262,8 +264,14 @@ D: 0.5322 ± 0.0546
 .venv/bin/python scripts/run_phase7_ablation.py --all-experiments
 ```
 
-다음 단계는 `Phase 8 — Structure Selection`입니다. Primary metric은 5-fold mean Macro-F1이며,
-secondary 기준은 복약/음수 Recall, std, model simplicity, latency/memory입니다.
+Phase 8 선택을 재현하려면 다음 명령을 사용합니다. 동일 evidence에서 기존 artifact와 값이 다르면
+overwrite하지 않고 실패합니다.
+
+```bash
+.venv/bin/python scripts/run_phase8_selection.py
+```
+
+다음 단계는 `Phase 9 — Pilot deployment/check model`이며 아직 구현·학습하지 않았습니다.
 
 ---
 

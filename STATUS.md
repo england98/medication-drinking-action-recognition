@@ -3,9 +3,9 @@
 # Project Status
 
 - 프로젝트: `medication-drinking-action-recognition`
-- 현재 Phase: **Phase 7 — COMPLETE**
-- 이전 Phase: **Phase 6 — COMPLETE**
-- 다음 Phase: **Phase 8 — READY TO START**
+- 현재 Phase: **Phase 8 — COMPLETE**
+- 이전 Phase: **Phase 7 — COMPLETE**
+- 다음 Phase: **Phase 9 — READY TO START**
 - 최종 업데이트: 2026-08-30
 - 문서 성격: **현재 작업 상태의 Single Source of Truth**
 
@@ -39,8 +39,10 @@ CLI 구현을 완료하고 실제 239-cache validation-only를 통과했다. 독
 **PASS_WITH_WARNINGS — READY FOR SMOKE AFTER NOTED CHECKS**였고, 이후 Mean/GRU/MLflow smoke와
 최종 regression을 모두 통과했다. commit `60c72bc125b0cc2fe94bd9500858192e3edaf521`의 clean
 working tree에서 A/B/C/D × 5-fold 20개 production run, OOF/aggregation 및 Post-run Independent
-Final Audit를 완료했다. 최종 판정은 **PASS_WITH_WARNINGS — PHASE 7 COMPLETE / PHASE 8 READY
-TO START**다. Phase 8의 구조 선택과 winner 결정은 아직 수행하지 않았다.
+Final Audit를 완료했다. Phase 8에서 fold/OOF evidence completeness, participant leakage,
+experiment fairness와 metric aggregation을 독립 검증하고 고정된 primary metric으로 Experiment D
+(AI-Hub fine-tuned Encoder + GRU)를 선택했다. 최종 상태는 **Phase 8 COMPLETE / Phase 9 READY
+TO START**이며 Phase 9 구현·학습은 아직 시작하지 않았다.
 
 현재 위치:
 
@@ -67,7 +69,9 @@ ETRI Embedding Cache        완료 (PASS_WITH_WARNINGS)
 ↓
 2×2 Ablation                완료 (PASS_WITH_WARNINGS)
 ↓
-Structure Selection         ← 다음 (READY TO START)
+Structure Selection         완료
+↓
+Pilot deployment/check model ← 다음 (READY TO START)
 ```
 
 ---
@@ -315,8 +319,11 @@ Maximum deviation: 0.00e+00
 Standard deviation: population ddof=0
 Post-run Independent Final Audit: PASS_WITH_WARNINGS
 Audit findings: BLOCKER 0 / MAJOR 0 / MINOR 1 / INFO 3
-Phase 8: READY TO START
-Winner/structure selection: NOT PERFORMED
+Phase 8: COMPLETE
+Selected structure: Experiment D / AI-Hub fine-tuned Encoder / GRU + Linear
+Selection artifact: configs/phase8_selected_model.yaml
+Result document: docs/05_Phase8_Structure_Selection_Result.md
+Phase 9: READY TO START (implementation/training NOT STARTED)
 ```
 
 Phase 7 정식 5-fold 결과:
@@ -328,8 +335,9 @@ Phase 7 정식 5-fold 결과:
 | C | ImageNet-only | GRU | 0.5190 ± 0.0420 | 0.3742 | 0.3000 | 0.8833 |
 | D | AI-Hub fine-tuned | GRU | 0.5322 ± 0.0546 | 0.3576 | 0.3333 | 0.9000 |
 
-위 표의 std는 population standard deviation(`ddof=0`)이다. 이 결과의 구조 선택과 winner 판정은
-Phase 8에서 수행한다.
+위 표의 std는 population standard deviation(`ddof=0`)이다. Phase 8 독립 재계산은 exact match였고,
+primary metric 5-fold mean Macro-F1 기준 Experiment D를 선택했다. exact tie가 없어 secondary
+tie-break는 사용하지 않았다.
 
 ---
 
@@ -440,7 +448,7 @@ Phase 3 Fixed Pilot Manifest 완료 항목:
 다음 작업:
 
 ```text
-Phase 8 — Structure Selection
+Phase 9 — Pilot deployment/check model
 ```
 
 Phase 7 최종 상태:
@@ -489,6 +497,19 @@ Phase 7 현재 작업:
 - [x] Post-run Independent Final Audit (`PASS_WITH_WARNINGS`)
 - [x] Phase 7 COMPLETE
 
+Phase 8 현재 작업:
+
+- [x] A/B/C/D 각각 intended 5-fold evidence completeness 검증
+- [x] participant-disjoint 및 OOF 239개 exact-once 검증
+- [x] fold metrics/OOF 기반 aggregation 독립 재계산 및 Phase 7 exact match
+- [x] manifest/fold/T/D/ROI/sampling/normalization/training provenance fairness 검증
+- [x] 고정 primary metric 기준 deterministic ranking 및 Experiment D 선택
+- [x] 2×2 effect analysis 및 human-readable 결과 문서 생성
+- [x] machine-readable Phase 9 handoff artifact 생성
+- [x] Phase 8 tests 및 전체 regression PASS
+- [x] Phase 8 COMPLETE
+- [ ] Phase 9 구현/학습 (NOT STARTED)
+
 ---
 
 ## 7. Pilot 전체 진행 순서
@@ -510,9 +531,9 @@ Phase 6  ETRI Embedding             완료 (PASS_WITH_WARNINGS)
 ↓
 Phase 7  2×2 Ablation               완료 (PASS_WITH_WARNINGS)
 ↓
-Phase 8  구조 선택                  다음 (READY TO START)
+Phase 8  구조 선택                  완료
 ↓
-Phase 9  Pilot deployment/check model
+Phase 9  Pilot deployment/check model  다음 (READY TO START)
 ↓
 Phase 10 Pipeline Integration
 ```
@@ -571,7 +592,7 @@ Phase 7 warning / limitation:
 5. 본 결과는 축소 Pilot 결과이며 최종 제품 성능이나 광범위한 일반화 성능으로 해석하지 않는다.
 6. 음수 Recall은 네 구성 모두에서 상대적으로 낮게 관측되어 Phase 8 판단 시 함께 검토한다.
 7. smoke directory 3개와 MLflow smoke run 1개는 production/aggregate에서 분리됐다.
-8. Phase 7에서는 winner를 결정하지 않았다. 구조 선택은 Phase 8에서 수행한다.
+8. Phase 7에서는 winner를 결정하지 않았으며, Phase 8에서 고정 정책으로 Experiment D를 선택했다.
 ```
 
 새로운 blocker, 검증 실패, 설계 변경 필요성이 발생하면 이 섹션을 즉시 갱신한다.

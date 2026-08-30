@@ -1,0 +1,235 @@
+phase8:
+  status: complete
+  selected_experiment: D
+  selected_rank: 1
+  encoder:
+    type: ai_hub_fine_tuned
+    cache_key: encoder_b
+    identifier: stage-a-20260829T170113531051Z-adf86795:26393618a91db07826b6e9b1ba0beb30696ae92b9fd8c929d01054aed866cfd6
+    checkpoint_relative_path: checkpoints/stage_a/stage-a-20260829T170113531051Z-adf86795/best.pt
+    frozen: true
+  stage_b:
+    type: gru
+    model_config:
+      type: gru
+      input_size: 1024
+      num_classes: 3
+      hidden_size: 128
+      num_layers: 1
+      bidirectional: false
+      dropout: 0.0
+      batch_first: true
+      sequence_representation: final_hidden
+  selection:
+    primary_metric: macro_f1_5fold_mean
+    primary_value: 0.5321757751479114
+    macro_f1_std: 0.05457501516763684
+    class_recall:
+      복약:
+        mean: 0.3575757575757576
+        std: 0.1653807139076341
+      음수:
+        mean: 0.3333333333333333
+        std: 0.052704627669472995
+      기타:
+        mean: 0.9
+        std: 0.03333333333333334
+    ranking:
+    - rank: 1
+      experiment: D
+      macro_f1_mean: 0.5321757751479114
+      macro_f1_std: 0.05457501516763684
+    - rank: 2
+      experiment: C
+      macro_f1_mean: 0.518992215937296
+      macro_f1_std: 0.042043828688204325
+    - rank: 3
+      experiment: A
+      macro_f1_mean: 0.450650294499351
+      macro_f1_std: 0.07935508489159993
+    - rank: 4
+      experiment: B
+      macro_f1_mean: 0.44910204849284047
+      macro_f1_std: 0.0873563117848638
+    secondary_tie_break_used: false
+    reason: Highest 5-fold mean Macro-F1; no numerical tie, so secondary criteria
+      were not used.
+  provenance:
+    phase7_config: configs/phase7_ablation.yaml
+    phase7_config_sha256: a3fc9514d0ef3ce003002ed911748ae6d1b7481ed3613753cfcbe1ff4adc4067
+    phase7_output_relative_path: checkpoints/phase7_ablation
+    phase7_implementation_commit: 60c72bc125b0cc2fe94bd9500858192e3edaf521
+    manifest_sha256: 0c641e3301196afa92c4cf7b7cad28dfd9e21c5f88a5ebbe02b694110b3b4b93
+    fold_assignment_sha256: 6d960834e34dc4b8f510a92d65a9d5c26b1fc13ff3f565dc97162ddf5b7fb99a
+    fold_ids:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    selected_valid_clips: 239
+    roi_config_sha256: 7b692e3fa0260f745664869a58a958cf276d428cf693abda4449fcbadc71e381
+    stage_a_config_sha256: 0987566c7175a408f4d72504e77c16ec835eba722a52a98a03fe62e204e4e54f
+    sampling: fixed_uniform
+    T: 64
+    embedding_dimension: 1024
+    normalization: torchvision_imagenet_default
+    class_mapping:
+      복약: 0
+      음수: 1
+      기타: 2
+    source_evidence:
+      A:
+        folds:
+          '0':
+            best.pt: 6c33ea9067b4f0f877721210ae8984f65a67b7193c2c75a7f906e3379890773f
+            effective_config.json: fa269d80d2b2bb6e330943876b593b81c6d74f836614e3d2cabc8a62df89a302
+            fold_metrics.json: 169b9ef8b7baf09949b10f7d8ff6d9085c6f47de82f30771fa6b99df3100e5c5
+            oof_predictions.csv: 261d0ab6f0aa399184ff41c2818e302213a64e5835562b06fcd1a351429ebfd3
+          '1':
+            best.pt: 78c7ffe09600e08c44107789c693f068cf4d9cdecd0527119f83e3e74bcc8b05
+            effective_config.json: 29fc0454817f1c3d6c50a8bb9850b33068afea9fd954d7da238acbec58c4a1c0
+            fold_metrics.json: 751ff2e0fb0e520a51a7a81f7756684699a4e391ea5e06f020509dd8c3226e5f
+            oof_predictions.csv: aefd5d7cffc89c66bb8eef3c9a099f08e5810a0751158ff6cd818a10d6ce1e3a
+          '2':
+            best.pt: 8f79966892c03381292591d910f980f81aa0872b78a1a6113739bd20ca757df4
+            effective_config.json: c8f3766890e8c8b8637c472a59f1416dd29e0c6655f833860dbd92f042c3b406
+            fold_metrics.json: ba3312cd2f0603f703611257fc867e2d4c48dd59a1b7208dbc21e8aef8b673f5
+            oof_predictions.csv: 2c6d4d0470d144a46f6c8e4924f3dd498159d470115ef2ce58cc1a963e6565f5
+          '3':
+            best.pt: 85f93aac482b4ca82a8fb37d41cae554da20f60d5c2742aa7798b474865e23a4
+            effective_config.json: 23c4f6f53f2ac929aaa8e1331fe74d5d415cc443abf0ed5b7f79cc9c3799fe22
+            fold_metrics.json: bcecdca97315316e3200c54585497e537143c8466637f933507aab34461da9eb
+            oof_predictions.csv: 6e68940edf1c9662fd18b02d29a419ef27ebb03da4e3565bf1f9f7bb4bc68419
+          '4':
+            best.pt: 9d781ec502891b116bdd52138d96857ec5eb1390f45f4ff890d847529429f479
+            effective_config.json: 102a9c093c7ca19c5b4fed7d7566bda35c0093b87bcef8862836c993b3ed04b7
+            fold_metrics.json: e80b4ad39793fe9ccc045d1fc92a5c2c359d33f7bfd5fbd8b2ccbf8c271cac53
+            oof_predictions.csv: c334f9f3a6d2200f7e0b0bf22e316f0f0a6291b5db2b778d59485d8cf5c74e97
+        summary: e368f9bbdcb5c20aac70cf533795ffa0347a4307f27c6117fa03d3e6fbba8af0
+        oof: 835396431583aab177183d68068a54ff155a60dcdb76ccab89254b81420b847e
+      B:
+        folds:
+          '0':
+            best.pt: 4d787fccfa19403da137cc11aa058fc3b4f1776dc14495beb3da1f08eed928fe
+            effective_config.json: e794e9b0888161c7841b7f4f61c23c650c70de41d5482a9a51e1218beff57cfe
+            fold_metrics.json: ad08614cb7ab01509fbd035b75e7cd198a6a1c201be694991d75ea33be46e2d0
+            oof_predictions.csv: 2b223b1fac699b75be83e27f67e5dfe9e2184cc9a606bb2accf5cdff268e20a6
+          '1':
+            best.pt: 55438085ca6aeb303287fc5c31879f10f6eeef920ea6a1acec2c1abb908c587d
+            effective_config.json: ed81361480933bd56a147b01971553c194dde3f4b33d24b2019241fe60e16675
+            fold_metrics.json: 98f24f564d23a6fceb30543fc999ce6b060d15cd20371ced30f4ea8affc12a28
+            oof_predictions.csv: 8e3bb76b800b10fe8dafffe406f7d741d3f2ce6dada98b67975e046ace660104
+          '2':
+            best.pt: 9d4af71b7b7503c74065e16b26a46b8c629191ff6e3be663dc12847985b78b33
+            effective_config.json: 87979e006ba5650bdbac0cb57c7c3b5e8915e7a9e9df9fe2cdd771ee6299f3cc
+            fold_metrics.json: e132b6008f1b5ce2dcbaa171c776b9aa965d3e09399434191ef08b36857c14da
+            oof_predictions.csv: 15a8f946229f6770fdc2f1d01b3c44a2227a90fe0d564ac347e41ed593fce5c3
+          '3':
+            best.pt: 5e0637af45ca78cba5eb0f9669275350013a6c2bc3323aa80c66315b9a10fd75
+            effective_config.json: fad37031d189dd7362b4594fe960b542b83519321a8c4f8948fbe94d5f66752e
+            fold_metrics.json: ba715d8a69f94c043cb36ff11f0f148186a83836899280ce774970d620592cac
+            oof_predictions.csv: 44851b638673df07e15b51eb3c69f9d40f48cd33026d118dad35b66be493b9ca
+          '4':
+            best.pt: 9fd76c0321cb191ef256bdc0d9d0b917e901c7c80897938905d9267ffc8d9965
+            effective_config.json: a8eda1547a7adf3aeab44a1e44eaf9fa31f783f0954b81287f165cddccf94333
+            fold_metrics.json: 98e49309c52a7739ab89722859061e4309cb838a6d83a6cc1285e1acfe93a15b
+            oof_predictions.csv: a6ce8b199949f587125714f3494fb1b063855a5cf940a13a416ba1b6848e12aa
+        summary: 94d21ea90fb2841c08dc570042bd25464120fe14e89f0ab5b331006f5b172e9d
+        oof: 97532651d947caa88918f4a8ce1a9afe509d691cec6600b634e531e48067893b
+      C:
+        folds:
+          '0':
+            best.pt: fe53ee1ec932d6ec83602881986a225606f2e34bc95559e0a6cf084bd8a0d605
+            effective_config.json: 59ce0b71ad684cff9247ab637de32847d45d759394aa1cedd997219e75123410
+            fold_metrics.json: 6cef647454211ce9d73ceb636139baf1a87bd8c2dedb81380ce24965d83a70d4
+            oof_predictions.csv: 130571a9dc672dd6484e3cc486940d0dabf8c6947604920a3a4ce0f8dee100f6
+          '1':
+            best.pt: 7c22012e8a6e47774b25f9ce8bd14d5a55c34331c0cf5e954b8027adf00401d5
+            effective_config.json: ac57e467ca459db903d2ad9dda5c746235400edd5748c6bf106b3a2b06108048
+            fold_metrics.json: 42b85ae5462ff4228f306e98dd27a7caa325b294d493ac1f5ad2a74bccfd2df2
+            oof_predictions.csv: 43a7e6b930cc0b986b12b59eb72e7285650152c1690e46ac89bd22daa81de67e
+          '2':
+            best.pt: 6956f9833f257da373fac0a9681a2ba631b8180b05ea7aaa046e06a1b9d334ce
+            effective_config.json: fd0cb1461abfa00288aa94f3bd873a5be329b52b727313017ab4619cca59f467
+            fold_metrics.json: bfad5ba773f02b37250df5e6745d2b9f110efa8e10705ae25f24a3622af253a9
+            oof_predictions.csv: 4d7fb254d53a8d72db3b6155fb5f905a28d5ef3f9dd6fee0db57896ce22c7398
+          '3':
+            best.pt: 7e739d1fbcd1bc9f4a0d9857428f1a5b5c7498788a54442603a57e2b012f7881
+            effective_config.json: c1e53cc39f583aff35069d34e89876bb0f6e4e189b3c94e8d94fffe8e08ad78f
+            fold_metrics.json: eb97d56f600cd17deac3edd1d85b260dc61800bfb608a7207f0ab13ee920eb8f
+            oof_predictions.csv: 587d8b8cc0ce605516693b2d0a48488ffd50114ec7f52555d68dd5642e86d945
+          '4':
+            best.pt: 88e526f1acc699eeea32fb1647e766d364a8ed07d0482e814552276e71584eb7
+            effective_config.json: ff1d515d31afa62815aaf74ae918c15ca7ade62a17e8e6b9e104d5b63c37536d
+            fold_metrics.json: f38c7ef5746912e6b6ef70416e20c3e2b83086dda4491168dd345806540f0a6a
+            oof_predictions.csv: f1bfad8bbffe8807a85f655d420f33e0a248e5307dfda2b6749a0bf0432c43d6
+        summary: 737e4566ede53096457628c83462ebbd87c5935f914f7cbd2155cbd4c16e7ada
+        oof: fe1fb9dbef76a8aa02205883bf06a09d1572aef70b5f8fa6b4093335b4b4f768
+      D:
+        folds:
+          '0':
+            best.pt: b86cdfcc0858c7e1b8812f87ea29c1f6ed00066ddcad3db7b5f0267905dd0105
+            effective_config.json: b93762409c5f68ba4f7dc7e4a5362208b607896f52b576111a1d5d5fbbeb17fa
+            fold_metrics.json: b7929f02a012824d9a5ace3e993ee3f14ccfd010dd4c6fe05a5c3fb7f796a4d0
+            oof_predictions.csv: 410fbbb8dbadd8ff4386a9a1bc26ccd8ea5f010239eee70bc96e10555f5972e1
+          '1':
+            best.pt: 3b4adae05f5b3f06583307637776e1184305e477d9bbfe3be76b399a29a68a13
+            effective_config.json: 4f4bbbf0dff87bb55d90452f9ebb866b2f32e8748d886811cc56e220ae716fba
+            fold_metrics.json: 90165cd9f509daae8acff0304e9eefb5793a6994161b1892464a757274af4272
+            oof_predictions.csv: a7551b6475b83e117bf0adb3f244b47dce9b5f47c986ddb086b7c8dcdb21e0f0
+          '2':
+            best.pt: f8010653eb8b825f8ac7c729c1a15c0f89593944ff7529aa421e459923e1de02
+            effective_config.json: aca0ab1d73a01c0e6113204420b7d7d0c5eed70b214ec95b0812212f44bfe65b
+            fold_metrics.json: a21a9833bb9997ffe4b6d08c7dbf87f572255c3ccb29ead96c97582c36eef695
+            oof_predictions.csv: 75e14685cf6e56975e1be1db1c130e04c811157cc7963078f12c9e9f78adca4a
+          '3':
+            best.pt: dd1a3a53241268d968af562fa2473958db84b227f185e0e6125e9278c4d7e93d
+            effective_config.json: 24c9f7c0c9ae0f7460081fd527f319ed26d52345fc7f262f08d06f6d048fd25c
+            fold_metrics.json: d8a773b860dcc462aed9f004c7c631586d9de7e6b436ec9a0aab58cb8f80220c
+            oof_predictions.csv: cffa06b36b842e05e62647017048c5eee6115414e3b327a7d99f4e34754d3894
+          '4':
+            best.pt: 9d1ff9af1fcdd5349abae2960196cf9b670e7545525f7a004d39a73c07c879cf
+            effective_config.json: 2bc068954ede486d67fa9880479ea16b26985d6e6c005adb0ce4d30f0f420da0
+            fold_metrics.json: 343504aa1e50e1bcd3d8feae4e3e5a58f28cc64bbc852db15e3abe2c90dd8ffd
+            oof_predictions.csv: 2bfd04c38a3d5a0adb2b1abbb633ca8bbf80d02c3a72a6536d2f869459e28bba
+        summary: 36582c797f04fb5962330440fa4ed3d3fe62689ef51c049fb0afb26fd83d85af
+        oof: 0d2e087dc6f1396616acb6dbd45ac10bfb9bda9bf8e5d40ee93e40661870d6b9
+  effects:
+    B_minus_A:
+      macro_f1_mean: -0.0015482460065105452
+      class_recall_mean:
+        복약: -0.11818181818181817
+        음수: 0.033333333333333326
+        기타: 0.08333333333333326
+    D_minus_C:
+      macro_f1_mean: 0.013183559210615314
+      class_recall_mean:
+        복약: -0.016666666666666663
+        음수: 0.03333333333333338
+        기타: 0.01666666666666683
+    C_minus_A:
+      macro_f1_mean: 0.06834192143794504
+      class_recall_mean:
+        복약: 0.034848484848484906
+        음수: 0.033333333333333215
+        기타: 0.09999999999999987
+    D_minus_B:
+      macro_f1_mean: 0.0830737266550709
+      class_recall_mean:
+        복약: 0.1363636363636364
+        음수: 0.03333333333333327
+        기타: 0.03333333333333344
+    D_minus_A:
+      macro_f1_mean: 0.08152548064856036
+      class_recall_mean:
+        복약: 0.018181818181818243
+        음수: 0.0666666666666666
+        기타: 0.1166666666666667
+  phase9:
+    status: ready_to_start
+    retrain_scope: etri_pilot_all_selected_valid
+    encoder_frozen: true
+    stage_b_reinitialize: true
+    cv_fold_checkpoint_reuse: false
+    deployment_checkpoint_created: false
