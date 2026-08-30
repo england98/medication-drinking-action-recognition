@@ -253,7 +253,7 @@ C: 0.5190 ± 0.0420
 D: 0.5322 ± 0.0546
 ```
 
-현재 상태는 `Phase 8 COMPLETE / Phase 9 READY TO START`입니다. Phase 8은 고정된 5-fold mean
+현재 상태는 `Phase 9 COMPLETE / Phase 10 READY TO START`입니다. Phase 8은 고정된 5-fold mean
 Macro-F1 기준으로 Experiment D(AI-Hub fine-tuned Encoder + GRU)를 선택했습니다. Machine-readable
 handoff는 `configs/phase8_selected_model.yaml`, 상세 근거는
 `docs/05_Phase8_Structure_Selection_Result.md`에 있습니다.
@@ -271,7 +271,23 @@ overwrite하지 않고 실패합니다.
 .venv/bin/python scripts/run_phase8_selection.py
 ```
 
-다음 단계는 `Phase 9 — Pilot deployment/check model`이며 아직 구현·학습하지 않았습니다.
+Phase 9 — Pilot Deployment/Check Model은 완료되었습니다. Frozen Encoder B와 새로 초기화한 GRU를
+전체 selected-valid Pilot 239개/30명에 fold filter 없이 fixed 15 epochs로 학습했습니다. 생성된
+`deployment_check.pt`의 독립 reload verification과 Phase 9 Independent Final Audit은 PASS했습니다.
+이 checkpoint는 Phase 10 integration/pipeline check용이며 best CV 또는 공식 성능 checkpoint가 아닙니다.
+
+다음 명령은 완료된 Phase 9 경로의 재현/재검증용입니다.
+
+```bash
+.venv/bin/python scripts/run_phase9_deployment.py --dry-run
+.venv/bin/python scripts/run_phase9_deployment.py --train
+.venv/bin/python scripts/run_phase9_deployment.py \
+  --verify-checkpoint "<work_root>/checkpoints/phase9_deployment/phase9_deployment_full_pilot/deployment_check.pt"
+```
+
+Phase 9 training metric은 training diagnostic일 뿐 공식 정량 성능이 아닙니다. 공식 성능은 Phase 8에서
+확정한 ETRI participant-disjoint 5-fold CV 결과를 유지합니다. 다음 단계는 Phase 10 Pipeline
+Integration이며 아직 구현을 시작하지 않았습니다.
 
 ---
 

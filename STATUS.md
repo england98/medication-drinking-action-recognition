@@ -3,9 +3,9 @@
 # Project Status
 
 - 프로젝트: `medication-drinking-action-recognition`
-- 현재 Phase: **Phase 8 — COMPLETE**
-- 이전 Phase: **Phase 7 — COMPLETE**
-- 다음 Phase: **Phase 9 — READY TO START**
+- 현재 Phase: **Phase 9 — COMPLETE**
+- 이전 Phase: **Phase 8 — COMPLETE**
+- 다음 Phase: **Phase 10 — READY TO START**
 - 최종 업데이트: 2026-08-30
 - 문서 성격: **현재 작업 상태의 Single Source of Truth**
 
@@ -41,8 +41,11 @@ CLI 구현을 완료하고 실제 239-cache validation-only를 통과했다. 독
 working tree에서 A/B/C/D × 5-fold 20개 production run, OOF/aggregation 및 Post-run Independent
 Final Audit를 완료했다. Phase 8에서 fold/OOF evidence completeness, participant leakage,
 experiment fairness와 metric aggregation을 독립 검증하고 고정된 primary metric으로 Experiment D
-(AI-Hub fine-tuned Encoder + GRU)를 선택했다. 최종 상태는 **Phase 8 COMPLETE / Phase 9 READY
-TO START**이며 Phase 9 구현·학습은 아직 시작하지 않았다.
+(AI-Hub fine-tuned Encoder + GRU)를 선택했다. Phase 9에서 full-pilot dataset, fixed Experiment D
+training, deployment/check checkpoint provenance/reload 및 MLflow 경로를 구현하고 전체 selected-valid
+239개 sample로 15-epoch GPU 학습을 완료했다. Production checkpoint reload와 Independent Final Audit도
+PASS했다. 최종 상태는 **Phase 9 COMPLETE / Phase 10 READY TO START**이며 Phase 10 구현은 아직
+시작하지 않았다.
 
 현재 위치:
 
@@ -71,7 +74,9 @@ ETRI Embedding Cache        완료 (PASS_WITH_WARNINGS)
 ↓
 Structure Selection         완료
 ↓
-Pilot deployment/check model ← 다음 (READY TO START)
+Pilot deployment/check model 완료
+↓
+Pipeline Integration         ← 다음 (READY TO START)
 ```
 
 ---
@@ -323,8 +328,35 @@ Phase 8: COMPLETE
 Selected structure: Experiment D / AI-Hub fine-tuned Encoder / GRU + Linear
 Selection artifact: configs/phase8_selected_model.yaml
 Result document: docs/05_Phase8_Structure_Selection_Result.md
-Phase 9: READY TO START (implementation/training NOT STARTED)
+Phase 9: COMPLETE
+Phase 10: READY TO START (implementation NOT STARTED)
 ```
+
+Phase 9 최종 결과:
+
+```text
+Selected Experiment: D
+Encoder: AI-Hub fine-tuned MobileNetV3-Small / Encoder B / frozen=true
+Stage B: GRU + Linear / reinitialized=true
+Training data: ETRI selected-valid 239 clips / 30 participants / fold filter=false
+Class: 복약 59 / 음수 60 / 기타 120
+Input: T=64 / D=1024
+GRU: hidden_size=128 / num_layers=1 / unidirectional / dropout=0 / final_hidden
+Training: fixed 15 epochs / batch_size=16 / AdamW / LR=0.0001 / weight_decay=0.0001
+Loss/seed: Standard CrossEntropy / 42
+Validation / early stopping / best epoch selection: none
+Checkpoint: <work_root>/checkpoints/phase9_deployment/phase9_deployment_full_pilot/deployment_check.pt
+Diagnostics: <work_root>/checkpoints/phase9_deployment/phase9_deployment_full_pilot/training_diagnostics.json
+Checkpoint role: Pilot deployment/check model for Phase 10; not an official performance checkpoint
+Checkpoint save/reload/independent verification: PASS / [B,64,1024] -> [B,3]
+MLflow: phase9_pilot_deployment_check / phase9_deployment_full_pilot / FINISHED
+MLflow run ID: fe14b293c8dc4794936a326b4e1f5659
+Independent Final Audit: PASS / BLOCKER 0 / HIGH 0 / MEDIUM 0
+Regression: 104/104 PASS
+```
+
+Phase 9의 `training_diagnostic_loss`와 `training_diagnostic_macro_f1`은 학습 진단 전용이다.
+공식 Pilot 정량 성능은 Phase 8에서 확정한 ETRI participant-disjoint 5-fold CV 결과를 유지한다.
 
 Phase 7 정식 5-fold 결과:
 
@@ -448,8 +480,11 @@ Phase 3 Fixed Pilot Manifest 완료 항목:
 다음 작업:
 
 ```text
-Phase 9 — Pilot deployment/check model
+Phase 10 — Pipeline Integration
 ```
+
+예정 범위: ETRI inference script check, raw video → sampling → ROI → frozen Encoder B → GRU
+연결, `self_recorded/pipeline_check`의 기능적·정성적 검증이다. Phase 10 구현은 아직 시작하지 않았다.
 
 Phase 7 최종 상태:
 
@@ -497,7 +532,7 @@ Phase 7 현재 작업:
 - [x] Post-run Independent Final Audit (`PASS_WITH_WARNINGS`)
 - [x] Phase 7 COMPLETE
 
-Phase 8 현재 작업:
+Phase 8 / Phase 9 완료 항목:
 
 - [x] A/B/C/D 각각 intended 5-fold evidence completeness 검증
 - [x] participant-disjoint 및 OOF 239개 exact-once 검증
@@ -508,7 +543,21 @@ Phase 8 현재 작업:
 - [x] machine-readable Phase 9 handoff artifact 생성
 - [x] Phase 8 tests 및 전체 regression PASS
 - [x] Phase 8 COMPLETE
-- [ ] Phase 9 구현/학습 (NOT STARTED)
+- [x] Phase 9 full-pilot/no-fold-filter dataset mode 구현
+- [x] Experiment D/Encoder B/GRU 및 Phase 7 training policy 고정 검증
+- [x] deployment/check checkpoint provenance 및 reload 구현
+- [x] Phase 9 MLflow, dry-run 및 bounded smoke 경로 구현
+- [x] 실제 239-cache dry-run 및 1-epoch/2-batch smoke PASS
+- [x] 전체 239-sample / 30-participant / no-fold-filter dataset 검증
+- [x] Experiment D Stage B reinitialize 및 Encoder B frozen 유지
+- [x] 전체 Pilot 15 fixed epochs GPU training 완료
+- [x] deployment/check checkpoint 및 `training_diagnostics.json` 생성
+- [x] checkpoint save/reload 및 `[B,64,1024]` → `[B,3]` verification PASS
+- [x] MLflow `phase9_pilot_deployment_check / phase9_deployment_full_pilot` FINISHED
+- [x] Phase 9 Independent Final Audit PASS (BLOCKER/HIGH/MEDIUM 없음)
+- [x] full regression 104/104 PASS
+- [x] Phase 9 COMPLETE
+- [ ] Phase 10 Pipeline Integration (NOT STARTED)
 
 ---
 
@@ -533,9 +582,9 @@ Phase 7  2×2 Ablation               완료 (PASS_WITH_WARNINGS)
 ↓
 Phase 8  구조 선택                  완료
 ↓
-Phase 9  Pilot deployment/check model  다음 (READY TO START)
+Phase 9  Pilot deployment/check model  완료
 ↓
-Phase 10 Pipeline Integration
+Phase 10 Pipeline Integration           다음 (READY TO START)
 ```
 
 ---

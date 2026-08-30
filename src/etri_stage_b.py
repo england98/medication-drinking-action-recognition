@@ -226,12 +226,18 @@ def validate_cache_inventory(rows: Sequence[Mapping[str, Any]], cache_root: Path
 
 class EtriEmbeddingDataset(Dataset):
     def __init__(self, rows: Sequence[Mapping[str, Any]], cache_root: Path, encoder_key: str,
-                 config: StageBConfig, fold: int, split: str) -> None:
-        if split not in {"train", "val"}: raise StageBError(f"Invalid split: {split}")
-        validate_fold_contract(rows, fold)
-        self.rows = [dict(row) for row in rows if (row["fold"] != fold) == (split == "train")]
+                 config: StageBConfig, fold: int | None, split: str) -> None:
+        if split not in {"train", "val", "full"}: raise StageBError(f"Invalid split: {split}")
+        if split == "full":
+            if fold is not None: raise StageBError("Full-pilot dataset must not apply a fold filter")
+            validate_fold_contract(rows)
+            self.rows = [dict(row) for row in rows]
+        else:
+            if fold is None: raise StageBError(f"Phase 7 {split} split requires a validation fold")
+            validate_fold_contract(rows, fold)
+            self.rows = [dict(row) for row in rows if (row["fold"] != fold) == (split == "train")]
         self.cache_root, self.encoder_key, self.config = cache_root / "clips", encoder_key, config
-        if not self.rows: raise StageBError(f"Empty Phase 7 split: {split}/fold={fold}")
+        if not self.rows: raise StageBError(f"Empty Stage B split: {split}/fold={fold}")
 
     def __len__(self) -> int: return len(self.rows)
 
@@ -357,9 +363,12 @@ def save_stage_b_checkpoint(path: Path, model: nn.Module, provenance: Mapping[st
 
 def load_stage_b_checkpoint(path: Path, device: str | torch.device = "cpu") -> tuple[nn.Module, dict[str, Any]]:
     payload = torch.load(path, map_location=device, weights_only=False); provenance = payload.get("provenance", {})
-    if (payload.get("format_version") != 1 or provenance.get("phase") != 7
+    if (payload.get("format_version") != 1 or provenance.get("phase") not in {7, 9}
             or provenance.get("class_mapping") != CLASS_TO_INDEX):
         raise StageBError("Stage B checkpoint provenance is incompatible")
+    if provenance.get("phase") == 9 and (provenance.get("role") != "deployment_check"
+            or provenance.get("selected_experiment") != "D"):
+        raise StageBError("Phase 9 checkpoint role/selection is incompatible")
     model_config = provenance.get("model_config", {}); stage_b = provenance.get("stage_b")
     config = load_stage_b_config(Path(provenance["config_path"]))
     if model_config != model_config_for(stage_b, config): raise StageBError("Stage B checkpoint model config mismatch")
