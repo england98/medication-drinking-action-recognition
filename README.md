@@ -1,502 +1,202 @@
 # medication-drinking-action-recognition
 
-복약 / 음수(물 마시기) / 기타 행동을 짧은 영상에서 분류하는 **경량 비전 모델 1차 Pilot 프로젝트**입니다.
+짧은 RGB 영상에서 **복약 / 음수(물 마시기) / 기타** 행동을 분류하는 경량 비전 모델 1차 Pilot 프로젝트입니다.
 
-Baseline에서 정의한 구현·평가·검증 절차를 완주하여 **Phase 10과 1차 Pilot을 완료**했습니다.
-이는 축소된 Pilot 범위의 완료이며 production 완성이나 광범위한 일반화 성능 달성을 뜻하지 않습니다.
+현재 상태는 **1st Pilot COMPLETE**입니다. 이는 제한된 Pilot 데이터에서 설계한 학습·평가·inference pipeline을 완주했다는 뜻이며, production 완성이나 임상적 성능, 광범위한 일반화 성능을 의미하지 않습니다. 상세 Phase 이력과 현재 작업 상태는 [`STATUS.md`](STATUS.md)를 따릅니다.
 
----
+## 1. Overview
 
-## 1. Pilot 목표
+최종 class taxonomy는 다음과 같습니다.
 
-```text
-환경·경로·Git 기준선
-→ Full Candidate Inventory
-→ Fixed Pilot Manifest
-→ ROI Preflight
-→ Stage A Visual Encoder
-→ ETRI Embedding Cache
-→ Stage B Clip Classifier
-→ 2×2 Ablation
-→ participant-disjoint 5-fold CV
-→ model selection
-→ deployment/check model
-→ raw-video OOF End-to-End evaluation
-   (Experiment D fold-specific held-out checkpoints)
-→ ETRI + self_recorded inference pipeline check
-```
+| Index | Class | 의미 |
+|---:|---|---|
+| 0 | 복약 | 약 먹기 |
+| 1 | 음수 | 물 마시기 |
+| 2 | 기타 | 위 두 행동이 아닌 행동 |
 
-여기서 End-to-End는 CNN과 temporal model의 joint training이 아니라, raw video 입력부터
-3-class 출력까지의 전체 inference path를 의미합니다.
-
-최종 출력 class:
+이 프로젝트에서 **End-to-End**는 다음의 전체 inference path를 뜻합니다.
 
 ```text
-복약
-음수 = 물 마시기
-기타
+raw video
+→ frame sampling
+→ ROI / fallback
+→ visual encoder
+→ Stage B classifier
+→ 복약 / 음수 / 기타
 ```
 
----
+CNN과 temporal model을 함께 최적화하는 joint end-to-end video training을 의미하지 않습니다.
 
-## 2. Baseline 모델
-
-```text
-Input Video
-↓
-Frame Sampling
-↓
-MediaPipe ROI / Fallback
-↓
-MobileNetV3-Small
-↓
-Frame Embedding Sequence
-↓
-Mean Pooling + Linear
-        VS
-GRU + Linear
-↓
-복약 / 음수 / 기타
-```
-
-1차 Pilot의 핵심 비교:
-
-| Encoder | Stage B |
-|---|---|
-| ImageNet-only | Mean Pooling + Linear |
-| AI-Hub fine-tuned | Mean Pooling + Linear |
-| ImageNet-only | GRU + Linear |
-| AI-Hub fine-tuned | GRU + Linear |
-
-ETRI 학습 중 visual encoder는 frozen 상태로 사용합니다.
+## 2. Architecture
 
 최종 선택 구조는 **Experiment D**입니다.
 
 ```text
-AI-Hub fine-tuned MobileNetV3-Small Encoder B (frozen, D=1024)
-+ GRU (hidden size 128, final hidden, T=64)
-+ Linear 3-class classifier
+Input Video
+→ Fixed-uniform Frame Sampling (T=64)
+→ MediaPipe ROI / Full-frame Fallback
+→ AI-Hub fine-tuned MobileNetV3-Small Encoder B (frozen)
+→ Frame Embedding Sequence [T, 1024]
+→ GRU (hidden size 128, final hidden)
+→ Linear 3-class Classifier
+→ 복약 / 음수 / 기타
 ```
 
-Phase 7의 fold 0~4 모델은 participant-disjoint OOF 평가에 사용했습니다. Phase 9의 단일
-`deployment_check.pt`는 selected-valid 239개 전체로 Stage B를 다시 학습한 Phase 10
-functional/qualitative pipeline check용 모델이며, 독립 성능 checkpoint가 아닙니다.
+핵심 사양:
 
----
+- visual encoder: ImageNet pretrained 후 AI-Hub에서 fine-tuned한 MobileNetV3-Small Encoder B
+- encoder 상태: ETRI Stage B 학습과 inference에서 frozen
+- embedding dimension: `D=1024`
+- sequence length: `T=64`
+- Stage B: 1-layer, unidirectional GRU (`hidden_size=128`) + Linear
+- tensor contract: `[B, 3, H, W] → [B, 1024]`, `[B, 64, 1024] → [B, 3]`
 
-## 3. 데이터 역할
+### Model selection
+
+동일한 manifest, participant folds, ROI, sampling, normalization, loss, seed 정책과 frozen encoder 조건에서 수행한 2×2 ablation 결과입니다. 표준편차는 population standard deviation입니다.
+
+| Exp | Encoder | Stage B | 5-fold Macro-F1 mean ± std |
+|---|---|---|---:|
+| A | ImageNet-only | Mean Pooling + Linear | 0.450650 ± 0.079355 |
+| B | AI-Hub fine-tuned | Mean Pooling + Linear | 0.449102 ± 0.087356 |
+| C | ImageNet-only | GRU + Linear | 0.518992 ± 0.042044 |
+| **D** | **AI-Hub fine-tuned** | **GRU + Linear** | **0.532176 ± 0.054575** |
+
+사전에 고정한 primary metric인 5-fold mean Macro-F1이 가장 높은 Experiment D를 선택했습니다. 상세 근거와 machine-readable configuration은 [`docs/05_Phase8_Structure_Selection_Result.md`](docs/05_Phase8_Structure_Selection_Result.md)와 [`configs/phase8_selected_model.yaml`](configs/phase8_selected_model.yaml)에 있습니다.
+
+## 3. Data
 
 ### AI-Hub
 
-사용 목적:
+Stage A visual encoder 학습에 사용했습니다.
 
-```text
-Stage A visual encoder 학습
-```
-
-기준:
-
-- Local Training + Validation JSON/File 18,420건이 inventory master
 - `viewpoint_3` only
 - actor-disjoint split
-- Selected Pilot 400 videos: distinct actors 192명 (train 152 / validation 40 / overlap 0)
-- Candidate-pool split population: 202명 (train-split 162 / validation-split 40)
-- 동일 video의 JPG 3장은 같은 split
+- selected Pilot: 400 videos
+- `Take_pills → 복약`
+- `Drink_bever`, `Drink_alcohol → 음수 auxiliary positive`
+- 나머지 행동 `→ 기타`
 
-Stage A mapping:
-
-```text
-Take_pills        → 복약
-Drink_bever       → 음수 auxiliary positive
-Drink_alcohol     → 음수 auxiliary positive
-나머지            → 기타
-```
+AI-Hub 음수 데이터는 손-용기-입의 시각 특징을 학습하기 위한 auxiliary class입니다. 최종 음수 target의 의미는 ETRI A004의 **물 마시기**입니다.
 
 ### ETRI-Activity3D-LivingLab
 
-사용 목적:
-
-```text
-Stage B clip-level classifier 학습·평가
-```
-
-기준:
+Stage B clip-level classifier 학습과 정량 평가에 사용했습니다.
 
 - Batch B only
-- Fixed Pilot selected-valid subset 239 clips / 30 participants
+- Fixed Pilot selected-valid subset: 239 clips / 30 participants
 - participant-disjoint 5-fold
-- A003 = 복약
-- A004 = 물 마시기
-- 나머지 = 기타
-- A045~A048 multi-person action은 Pilot에서 제외
+- `A003 → 복약`, `A004 → 음수`, 나머지 `→ 기타`
+- multi-person action `A045~A048` 제외
 
----
+### Self-recorded
 
-## 4. 개발환경
+직접 촬영한 3개 영상은 전체 inference path와 label/confidence 생성을 확인하는 functional/qualitative check에만 사용했습니다. 세 영상 모두 pipeline 실행에는 성공했지만 모두 `기타`로 예측되어 복약·음수 intended sample은 일치하지 않았습니다.
 
-- Host: Windows
-- WSL 2
-- Ubuntu 26.04.1 LTS
-- Python 3.12.14
-- `uv`
-- PyTorch 2.13.0+cu126
-- CUDA runtime 12.6
-- GPU: NVIDIA GeForce GTX 1650 Ti / 4GB
-- VS Code + WSL
+Self-recorded 데이터는 학습, validation, model selection, tuning 또는 성능 지표 산출에 사용하지 않았으며 accuracy나 일반화 성능의 근거가 아닙니다.
 
-Python Interpreter:
+## 4. Pilot Results
 
-```text
-<WSL_PROJECT_ROOT>/.venv/bin/python
-```
+공식 정량 평가는 Experiment D의 fold-specific checkpoint를 사용한 **ETRI Batch B Pilot participant-disjoint 5-fold raw-video OOF End-to-End evaluation**입니다.
 
-환경 상세:
+| Metric | Result |
+|---|---:|
+| Raw MP4 inference | 239 / 239 성공 |
+| Participant leakage | 0 |
+| Duplicate / missing / failure | 0 / 0 / 0 |
+| Aggregate raw-video OOF Macro-F1 | 0.538337 |
+| Fold Macro-F1 mean ± population std | 0.532176 ± 0.054575 |
+| 복약 Recall (aggregate OOF) | 0.355932 |
+| 음수 Recall (aggregate OOF) | 0.333333 |
+| 기타 Recall (aggregate OOF) | 0.900000 |
 
-```text
-docs/01_개발환경_구축_기록.md
-```
+Aggregate OOF Macro-F1은 239개 prediction을 합쳐 계산한 값이고, fold mean ± std는 fold별 Macro-F1 다섯 개의 통계이므로 서로 대체하지 않습니다. Raw-video와 cached evaluation은 239개 prediction과 metric을 동일하게 재현했습니다.
 
----
+이 결과는 architecture selection에도 사용한 participant-disjoint 5-fold Pilot evidence입니다. 별도의 untouched independent final test 결과가 아니며, production·clinical 성능이나 외부 데이터 일반화 성능으로 해석하지 않습니다. 상세 metric, confusion matrix, 오류 분석과 해석 경계는 [`docs/06_Pilot_Final_Evaluation.md`](docs/06_Pilot_Final_Evaluation.md)를 참조하십시오.
 
-## 5. Project Root
+## 5. Quick Start
 
-```text
-/home/user/projects/medication-drinking-action-recognition
-```
+### Environment
 
-대용량 Raw / Working 데이터는 Project Root 밖의 외부 SSD에 둡니다.
+이 프로젝트는 WSL 2, Python 3.12, PyTorch/torchvision, CUDA, MediaPipe 환경에서 개발·검증했으며 기준 GPU는 NVIDIA GeForce GTX 1650 Ti 4GB입니다. Python 환경은 `uv`와 프로젝트의 `.venv`를 사용합니다.
 
-Raw Data:
+- 정확한 package snapshot: [`requirements-lock.txt`](requirements-lock.txt)
+- 환경·경로 상세: [`docs/01_개발환경_구축_기록.md`](docs/01_개발환경_구축_기록.md)
+- 공유 경로 예시: [`configs/paths.example.yaml`](configs/paths.example.yaml)
+- 현재 PC의 실제 경로: `configs/paths.local.yaml` (Git 제외)
 
-```text
-/mnt/d/AI 도약과정/데이터/data_raw/
-```
+대용량 Raw/Working 데이터와 checkpoint는 repository 밖에 두며, Raw 데이터는 수정하지 않습니다.
 
-Working Data:
+### Single Video Inference
 
-```text
-/mnt/d/AI 도약과정/데이터/data_workspace/medication_drinking_action_data
-```
-
-Raw 데이터는 수정하지 않습니다.
-
----
-
-## 6. 프로젝트 구조
-
-```text
-.
-├── configs/
-├── docs/
-├── manifests/
-├── scripts/
-├── src/
-├── tests/
-├── runtime/
-├── .gitignore
-├── .python-version
-├── requirements-lock.txt
-├── AGENTS.md
-├── README.md
-└── STATUS.md
-```
-
-필요한 디렉토리는 구현 단계에 맞춰 생성합니다.
-
-Phase 3 Fixed Pilot Manifest 생성 및 validation:
-
-```bash
-.venv/bin/python -m scripts.build_pilot_manifests
-```
-
-선정 정책은 `configs/pilot_manifest.yaml`에서 관리하며, 전체 candidate row를 유지한
-manifest와 selected-only CSV 및 SHA-256 요약은 Working Data의 `manifests/pilot/`에 생성됩니다.
-
-Phase 4 ROI Preflight 실행(공식 MediaPipe 모델이 Working cache에 없으면 함께 다운로드):
-
-```bash
-.venv/bin/python -m scripts.run_roi_preflight --download-models
-```
-
-MediaPipe Tasks 초기화에는 WSL의 `libGLESv2.so.2`가 필요합니다. 누락된 환경에서는 사용자가
-먼저 시스템 패키지 `libgles2`를 설치해야 합니다.
-
-대표 sample 선정과 ROI 기본값은 `configs/roi_preflight.yaml`에서 관리하며, visual output과
-report는 Working Data의 `roi_preflight/`에 생성됩니다. 통계와 visual review 후 사용자가
-PASS 여부를 판단하기 전까지 전체 Pilot preprocessing을 시작하지 않습니다.
-
-Phase 5 Stage A 구현과 사용자 실행 명령은 다음 문서에 정리되어 있습니다.
-
-```text
-docs/04_Phase5_Stage_A_실행_가이드.md
-```
-
-Phase 6 ETRI embedding preflight의 실제 1-clip Encoder A/B smoke test:
-
-```bash
-.venv/bin/python -m scripts.run_etri_embedding_smoke --output /tmp/phase6-etri-embedding-smoke.pt
-```
-
-이 명령은 전체 cache를 만들지 않고 Fixed ETRI Pilot clip 1개만 T=64로 처리합니다.
-
-Phase 6 multi-clip preflight와 전체 239-clip cache 생성에 사용한 재현 명령:
-
-```bash
-.venv/bin/python -m scripts.run_etri_embedding_cache --limit 3 --resume
-.venv/bin/python -m scripts.run_etri_embedding_cache --resume
-```
-
-정상 cache만 resume하며, 손상되거나 provenance가 다른 기존 cache는 명시적으로 실패합니다.
-Phase 6 전체 239-clip cache와 validation gate는 PASS했으며 Phase 6은 COMPLETE입니다.
-
-Phase 7 Stage B 2×2 ablation 검증 진입점:
-
-```bash
-.venv/bin/python scripts/run_phase7_ablation.py --validate-only
-```
-
-Pre-run Independent Audit 이후 Mean/GRU 최소 smoke에 사용한 명령입니다.
-
-```bash
-.venv/bin/python scripts/run_phase7_ablation.py --experiment A --fold 0 --smoke --epochs 1 --no-mlflow
-.venv/bin/python scripts/run_phase7_ablation.py --experiment C --fold 0 --smoke --epochs 1 --no-mlflow
-```
-
-Mean/GRU/MLflow smoke와 정식 A/B/C/D × 5-fold CV를 완료했습니다. 정식 A/B/C/D × 5-fold
-CV run은 20/20 FINISHED했으며, participant leakage는 0이고 A/B/C/D OOF는 각각 239개
-exact-once입니다. 상세 실행 및 Audit 이력은 `STATUS.md`를 따릅니다.
-
-5-fold Macro-F1 mean ± std:
-
-```text
-A: 0.4507 ± 0.0794
-B: 0.4491 ± 0.0874
-C: 0.5190 ± 0.0420
-D: 0.5322 ± 0.0546
-```
-
-현재 상태는 `Phase 10 COMPLETE / 1st Pilot COMPLETE`입니다. Phase 8은 고정된 5-fold mean
-Macro-F1 기준으로 Experiment D(AI-Hub fine-tuned Encoder + GRU)를 선택했습니다. Machine-readable
-handoff는 `configs/phase8_selected_model.yaml`, 상세 근거는
-`docs/05_Phase8_Structure_Selection_Result.md`에 있습니다.
-
-정식 Full CV에 사용한 실행 명령:
-
-```bash
-.venv/bin/python scripts/run_phase7_ablation.py --all-experiments
-```
-
-Phase 8 선택을 재현하려면 다음 명령을 사용합니다. 동일 evidence에서 기존 artifact와 값이 다르면
-overwrite하지 않고 실패합니다.
-
-```bash
-.venv/bin/python scripts/run_phase8_selection.py
-```
-
-Phase 9 — Pilot Deployment/Check Model은 완료되었습니다. Frozen Encoder B와 새로 초기화한 GRU를
-전체 selected-valid Pilot 239개/30명에 fold filter 없이 fixed 15 epochs로 학습했습니다. 생성된
-`deployment_check.pt`의 독립 reload verification과 Phase 9 Independent Final Audit은 PASS했습니다.
-이 checkpoint는 Phase 10 integration/pipeline check용이며 best CV 또는 공식 성능 checkpoint가 아닙니다.
-
-다음 명령은 완료된 Phase 9 경로의 재현/재검증용입니다.
-
-```bash
-.venv/bin/python scripts/run_phase9_deployment.py --dry-run
-.venv/bin/python scripts/run_phase9_deployment.py --train
-.venv/bin/python scripts/run_phase9_deployment.py \
-  --verify-checkpoint "<work_root>/checkpoints/phase9_deployment/phase9_deployment_full_pilot/deployment_check.pt"
-```
-
-Phase 9 training metric은 training diagnostic일 뿐 공식 정량 성능이 아닙니다. 공식 정량평가는
-**ETRI Batch B Fixed Pilot participant-disjoint 5-fold raw-video OOF End-to-End evaluation**입니다.
-이 평가는 Phase 9 deployment/check model이 아니라 Experiment D의 Phase 7 fold 0~4 held-out
-checkpoint를 사용합니다.
-
-Phase 10 단일 영상 inference 진입점:
+기본 단일 영상 inference는 selected-valid Pilot 239개 전체로 다시 학습한 `deployment_check.pt`를 사용합니다. 입력 경로와 새 JSON 출력 경로를 지정합니다.
 
 ```bash
 .venv/bin/python scripts/run_inference.py "<video.mp4>" \
-  --output-json "<work_root>/evaluations/phase10_recheck/<name>.json"
+  --output-json "<work_root>/evaluations/inference/<name>.json"
 ```
 
-Phase 10 raw-video OOF 재검증 진입점:
+`configs/paths.local.yaml`이 아닌 다른 path config를 쓰려면 `--paths-config`를 추가할 수 있습니다. 출력 JSON은 기존 파일이나 Raw 데이터 경로를 덮어쓰지 않습니다.
+
+`deployment_check.pt`는 선택된 D 구조의 Stage B를 전체 Pilot 데이터로 다시 학습한 functional/qualitative pipeline-check용 단일 checkpoint입니다. best CV checkpoint, independent performance checkpoint 또는 공식 정량 평가 checkpoint가 아닙니다.
+
+### Raw-video OOF Re-evaluation
+
+공식 평가 절차를 재검증할 때는 Experiment D의 fold별 held-out checkpoint를 사용합니다. 이 명령은 239개 raw MP4 전체를 처리하는 장시간 작업이므로 사용자가 직접 실행하며, 기존 공식 artifact와 다른 새 output directory를 지정해야 합니다.
 
 ```bash
 .venv/bin/python scripts/run_phase10_raw_video_oof.py \
   --output-root "<work_root>/evaluations/phase10_raw_video_oof_recheck"
 ```
 
-완료된 Pilot artifact를 보존하기 위해 기존 공식 output은 덮어쓰지 않으며, 재검증이
-필요한 경우 위와 같이 `<work_root>` 안의 별도 output 위치를 사용합니다.
+`--output-root`는 configured `<work_root>` 내부여야 하고, 이미 존재하는 directory는 overwrite하지 않습니다.
 
-Phase 10 결과:
-
-- Raw MP4 239/239 inference 성공, participant leakage/duplicate/missing/failure 모두 0
-- Aggregate OOF Macro-F1: `0.538337`
-- Fold Macro-F1 mean ± population std: `0.532176 ± 0.054575`
-- Class Recall: 복약 `0.355932`, 음수 `0.333333`, 기타 `0.900000`
-- Raw-vs-cached sample/prediction/metric/confusion matrix 일치; prediction agreement `239/239`
-- Probability는 max absolute difference `1.2517e-6`의 미세 차이가 있어 stored verdict
-  `DIFFERENCE_OBSERVED`를 유지
-- Raw-video OOF는 CPU, self-recorded 3-class pipeline check는 CUDA에서 실행
-- Self-recorded 3개 모두 label/confidence 생성과 전체 inference path가 정상 동작했습니다.
-  다만 세 영상 모두 `기타`로 예측되어 복약·음수 sample은 intended class와 일치하지
-  않았으며, 이는 기능적 연결 확인을 위한 qualitative check일 뿐 accuracy나 일반화 성능의
-  근거로 사용하지 않습니다.
-
-핵심 limitation은 untouched independent final test 부재, 낮은 복약/음수 Recall, 239개 Pilot subset의
-작은 규모, ETRI에서 frozen encoder 사용, 대부분 partial인 ROI, external/cross-batch generalization
-미평가, self-recorded의 qualitative-only 사용입니다. 상세 결과와 해석 경계는
-`docs/06_Pilot_Final_Evaluation.md`를 따릅니다.
-
----
-
-## 7. 주요 문서
-
-### 상위 설계 기준
+## 6. Project Structure
 
 ```text
-docs/00_Pilot_Design_Baseline.md
+.
+├── configs/               # 공유 pipeline·experiment configuration
+├── docs/                  # 설계, 환경, 실행 및 최종 결과 문서
+├── manifests/             # 소형 manifest metadata와 schema
+├── scripts/               # 학습·평가·inference CLI
+├── src/                   # 모델과 data pipeline 구현
+├── tests/                 # unit·regression test
+├── runtime/               # 로컬 runtime 산출물 (Git 제외)
+├── requirements-lock.txt  # 환경 package snapshot
+├── AGENTS.md              # Coding Agent 작업 규칙
+├── README.md              # 프로젝트의 안정적인 개요
+└── STATUS.md              # 상세 진행 상태의 Single Source of Truth
 ```
 
-모델·데이터·평가·Pipeline·Pilot 실행 순서의 최상위 기준입니다.
+## 7. Evaluation Protocol
 
-### 개발환경 기록
+- ETRI Fixed Pilot 239개를 participant-disjoint 5-fold로 평가합니다.
+- 동일 participant의 모든 clip은 같은 fold에 속합니다.
+- primary model-selection metric은 5-fold mean Macro-F1입니다.
+- 공식 raw-video OOF에서는 각 sample을 그 participant가 학습에 포함되지 않은 fold-specific Experiment D checkpoint로 정확히 한 번 평가합니다.
+- 별도의 untouched independent final test는 없습니다.
+- 전체 Pilot로 재학습한 `deployment_check.pt`는 기능·정성 확인용이며 공식 정량 평가에는 사용하지 않습니다.
 
-```text
-docs/01_개발환경_구축_기록.md
-```
+## 8. Limitations
 
-현재 Python / WSL / GPU / CUDA / 경로 / MLflow 환경 기준을 기록합니다.
+- model selection에 사용되지 않은 untouched independent final test가 없습니다.
+- 복약 Recall `0.355932`, 음수 Recall `0.333333`으로 target action sensitivity가 낮습니다.
+- ETRI Pilot subset이 239 clips / 30 participants로 작습니다.
+- ETRI에서는 visual encoder를 frozen 상태로 사용했으며 domain-specific fine-tuning을 평가하지 않았습니다.
+- ETRI의 ROI 처리는 대부분 `partial` status에 의존했습니다.
+- external dataset 및 ETRI cross-batch generalization을 평가하지 않았습니다.
+- self-recorded 3개 결과는 qualitative-only이며 성능 근거가 아닙니다.
 
-### 모델 구현 Reference
-
-```text
-docs/03_Model_Implementation_References.md
-```
-
-Phase 5~10의 모델·학습·평가·inference 구현에서 사용할 PyTorch / torchvision 공식 API와
-승인된 외부 GitHub Reference의 참고·채택 범위를 정의합니다.
-
-### 1차 Pilot 최종 평가
-
-```text
-docs/06_Pilot_Final_Evaluation.md
-```
-
-1차 Pilot 최종 정량평가, error analysis, limitation 및 interpretation boundary를 기록합니다.
-
-### Coding Agent 지침
-
-```text
-AGENTS.md
-```
-
-Coding Agent의 작업 권한, 실행 범위, 금지 사항, 작업 보고 방식을 정의합니다.
-
-### 현재 진행 상태
-
-```text
-STATUS.md
-```
-
-현재 Phase, 완료 작업, 진행 중 작업, 다음 작업, blocker를 기록하는 **작업 상태의 Single Source of Truth**입니다.
-
-### 문서 역할 요약
+## 9. Documentation
 
 | 문서 | 역할 |
 |---|---|
-| `AGENTS.md` | Coding Agent 작업 규칙 |
-| `README.md` | 프로젝트의 안정적인 개요 |
-| `STATUS.md` | 현재 작업 진행 상태 |
-| `docs/00_Pilot_Design_Baseline.md` | Pilot 상위 설계 기준 |
-| `docs/03_Model_Implementation_References.md` | Phase 5~10 모델 구현 공식 API·외부 Reference 기준 |
-| `docs/06_Pilot_Final_Evaluation.md` | 1차 Pilot 최종 평가·오류 분석·해석 경계 |
+| [`docs/00_Pilot_Design_Baseline.md`](docs/00_Pilot_Design_Baseline.md) | Pilot의 상위 설계·데이터·평가 기준 |
+| [`docs/01_개발환경_구축_기록.md`](docs/01_개발환경_구축_기록.md) | WSL, Python, GPU, 경로와 환경 기록 |
+| [`docs/03_Model_Implementation_References.md`](docs/03_Model_Implementation_References.md) | 모델 구현 공식 API와 외부 Reference 범위 |
+| [`docs/05_Phase8_Structure_Selection_Result.md`](docs/05_Phase8_Structure_Selection_Result.md) | 2×2 ablation과 Experiment D 선택 근거 |
+| [`docs/06_Pilot_Final_Evaluation.md`](docs/06_Pilot_Final_Evaluation.md) | 최종 평가, 오류 분석, limitation과 해석 경계 |
+| [`AGENTS.md`](AGENTS.md) | Coding Agent의 작업 권한과 절차 |
+| [`STATUS.md`](STATUS.md) | 상세 개발 이력, 현재 상태와 다음 작업 |
 
-일상적인 작업 진행에 따라서는 `STATUS.md`를 갱신하고, 프로젝트 규칙·구조·사용법 자체가 변경될 때만 `AGENTS.md` 또는 `README.md`를 수정합니다.
-
----
-
-## 8. 작업 방식
-
-기본 역할 분담:
-
-```text
-Coding Agent
-→ 코드 작성·수정
-→ config / test 작성
-→ 짧은 검증
-→ 사용자 실행 명령 제공
-
-사용자
-→ 전체 데이터 scan
-→ 대규모 preprocessing
-→ GPU 학습
-→ embedding 생성
-→ CV / ablation / inference 등 주요 실행
-```
-
-상세 규칙은 `AGENTS.md`를 따릅니다.
-
----
-
-## 9. 평가 기준
-
-ETRI의 정량 모델 선택 기준:
-
-```text
-participant-disjoint 5-fold CV
-```
-
-Primary metric:
-
-```text
-5-fold mean Macro-F1
-```
-
-함께 기록:
-
-- Macro-F1 mean ± std
-- class별 Recall mean ± std
-- fold별 Confusion Matrix
-- OOF aggregate Confusion Matrix
-
-별도의 untouched final test 성능으로 과장하지 않습니다.
-
----
-
-## 10. self_recorded 데이터
-
-경로:
-
-```text
-<SSD_WORK_ROOT>/self_recorded/pipeline_check/
-```
-
-용도:
-
-- inference pipeline 동작 검증
-- label / confidence 생성 확인
-- 기능적 오류 확인
-- 정성 확인
-
-사용하지 않는 용도:
-
-- 학습
-- validation
-- test metric
-- model selection
-- threshold tuning
-- preprocessing tuning
-
----
-
-## 11. Project Status
-
-현재 Phase, 완료 작업, 진행 중 작업, 다음 작업, blocker 등 **상세 작업 상태는 `STATUS.md`를 Single Source of Truth로 관리합니다.**
-
-`README.md`에는 상세 진행 상황을 중복 기록하지 않습니다.
-
-```text
-STATUS.md
-```
+`README.md`는 완료된 프로젝트의 안정적인 overview를, `STATUS.md`는 상세 진행 상태의 Single Source of Truth를 담당합니다.
