@@ -2,7 +2,8 @@
 
 복약 / 음수(물 마시기) / 기타 행동을 짧은 영상에서 분류하는 **경량 비전 모델 1차 Pilot 프로젝트**입니다.
 
-현재 목표는 전체 데이터에서 최고 성능을 만드는 것이 아니라, 축소된 대표 데이터로 전체 파이프라인을 한 번 완주하여 설계와 구현의 유효성을 검증하는 것입니다.
+Baseline에서 정의한 구현·평가·검증 절차를 완주하여 **Phase 10과 1차 Pilot을 완료**했습니다.
+이는 축소된 Pilot 범위의 완료이며 production 완성이나 광범위한 일반화 성능 달성을 뜻하지 않습니다.
 
 ---
 
@@ -63,6 +64,18 @@ GRU + Linear
 
 ETRI 학습 중 visual encoder는 frozen 상태로 사용합니다.
 
+최종 선택 구조는 **Experiment D**입니다.
+
+```text
+AI-Hub fine-tuned MobileNetV3-Small Encoder B (frozen, D=1024)
++ GRU (hidden size 128, final hidden, T=64)
++ Linear 3-class classifier
+```
+
+Phase 7의 fold 0~4 모델은 participant-disjoint OOF 평가에 사용했습니다. Phase 9의 단일
+`deployment_check.pt`는 selected-valid 239개 전체로 Stage B를 다시 학습한 Phase 10
+functional/qualitative pipeline check용 모델이며, 독립 성능 checkpoint가 아닙니다.
+
 ---
 
 ## 3. 데이터 역할
@@ -80,6 +93,8 @@ Stage A visual encoder 학습
 - Local Training + Validation JSON/File 18,420건이 inventory master
 - `viewpoint_3` only
 - actor-disjoint split
+- Selected Pilot 400 videos: distinct actors 192명 (train 152 / validation 40 / overlap 0)
+- Candidate-pool split population: 202명 (train-split 162 / validation-split 40)
 - 동일 video의 JPG 3장은 같은 split
 
 Stage A mapping:
@@ -102,6 +117,7 @@ Stage B clip-level classifier 학습·평가
 기준:
 
 - Batch B only
+- Fixed Pilot selected-valid subset 239 clips / 30 participants
 - participant-disjoint 5-fold
 - A003 = 복약
 - A004 = 물 마시기
@@ -253,7 +269,7 @@ C: 0.5190 ± 0.0420
 D: 0.5322 ± 0.0546
 ```
 
-현재 상태는 `Phase 9 COMPLETE / Phase 10 READY TO START`입니다. Phase 8은 고정된 5-fold mean
+현재 상태는 `Phase 10 COMPLETE / 1st Pilot COMPLETE`입니다. Phase 8은 고정된 5-fold mean
 Macro-F1 기준으로 Experiment D(AI-Hub fine-tuned Encoder + GRU)를 선택했습니다. Machine-readable
 handoff는 `configs/phase8_selected_model.yaml`, 상세 근거는
 `docs/05_Phase8_Structure_Selection_Result.md`에 있습니다.
@@ -285,9 +301,26 @@ Phase 9 — Pilot Deployment/Check Model은 완료되었습니다. Frozen Encode
   --verify-checkpoint "<work_root>/checkpoints/phase9_deployment/phase9_deployment_full_pilot/deployment_check.pt"
 ```
 
-Phase 9 training metric은 training diagnostic일 뿐 공식 정량 성능이 아닙니다. 공식 성능은 Phase 8에서
-확정한 ETRI participant-disjoint 5-fold CV 결과를 유지합니다. 다음 단계는 Phase 10 Pipeline
-Integration이며 아직 구현을 시작하지 않았습니다.
+Phase 9 training metric은 training diagnostic일 뿐 공식 정량 성능이 아닙니다. 공식 정량평가는
+**ETRI Batch B Fixed Pilot participant-disjoint 5-fold raw-video OOF End-to-End evaluation**입니다.
+
+Phase 10 결과:
+
+- Raw MP4 239/239 inference 성공, participant leakage/duplicate/missing/failure 모두 0
+- Aggregate OOF Macro-F1: `0.538337`
+- Fold Macro-F1 mean ± population std: `0.532176 ± 0.054575`
+- Class Recall: 복약 `0.355932`, 음수 `0.333333`, 기타 `0.900000`
+- Raw-vs-cached sample/prediction/metric/confusion matrix 일치; prediction agreement `239/239`
+- Probability는 max absolute difference `1.2517e-6`의 미세 차이가 있어 stored verdict
+  `DIFFERENCE_OBSERVED`를 유지
+- Raw-video OOF는 CPU, self-recorded 3-class pipeline check는 CUDA에서 실행
+- Self-recorded 3개 모두 label/confidence 생성과 전체 경로가 정상 동작했으나, 이는 정성적 기능
+  검증일 뿐 accuracy가 아님
+
+핵심 limitation은 untouched independent final test 부재, 낮은 복약/음수 Recall, 239개 Pilot subset의
+작은 규모, ETRI에서 frozen encoder 사용, 대부분 partial인 ROI, external/cross-batch generalization
+미평가, self-recorded의 qualitative-only 사용입니다. 상세 결과와 해석 경계는
+`docs/06_Pilot_Final_Evaluation.md`를 따릅니다.
 
 ---
 
@@ -318,6 +351,14 @@ docs/03_Model_Implementation_References.md
 Phase 5~10의 모델·학습·평가·inference 구현에서 사용할 PyTorch / torchvision 공식 API와
 승인된 외부 GitHub Reference의 참고·채택 범위를 정의합니다.
 
+### 1차 Pilot 최종 평가
+
+```text
+docs/06_Pilot_Final_Evaluation.md
+```
+
+1차 Pilot 최종 정량평가, error analysis, limitation 및 interpretation boundary를 기록합니다.
+
 ### Coding Agent 지침
 
 ```text
@@ -343,6 +384,7 @@ STATUS.md
 | `STATUS.md` | 현재 작업 진행 상태 |
 | `docs/00_Pilot_Design_Baseline.md` | Pilot 상위 설계 기준 |
 | `docs/03_Model_Implementation_References.md` | Phase 5~10 모델 구현 공식 API·외부 Reference 기준 |
+| `docs/06_Pilot_Final_Evaluation.md` | 1차 Pilot 최종 평가·오류 분석·해석 경계 |
 
 일상적인 작업 진행에 따라서는 `STATUS.md`를 갱신하고, 프로젝트 규칙·구조·사용법 자체가 변경될 때만 `AGENTS.md` 또는 `README.md`를 수정합니다.
 

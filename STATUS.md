@@ -3,9 +3,9 @@
 # Project Status
 
 - 프로젝트: `medication-drinking-action-recognition`
-- 현재 Phase: **Phase 9 — COMPLETE**
-- 이전 Phase: **Phase 8 — COMPLETE**
-- 다음 Phase: **Phase 10 — READY TO START**
+- 현재 Phase: **Phase 10 — COMPLETE**
+- Pilot 상태: **1st Pilot — COMPLETE**
+- 다음 방향: **Full Experiment / Post-Pilot planning (NOT STARTED)**
 - 최종 업데이트: 2026-08-30
 - 문서 성격: **현재 작업 상태의 Single Source of Truth**
 
@@ -44,8 +44,11 @@ experiment fairness와 metric aggregation을 독립 검증하고 고정된 prima
 (AI-Hub fine-tuned Encoder + GRU)를 선택했다. Phase 9에서 full-pilot dataset, fixed Experiment D
 training, deployment/check checkpoint provenance/reload 및 MLflow 경로를 구현하고 전체 selected-valid
 239개 sample로 15-epoch GPU 학습을 완료했다. Production checkpoint reload와 Independent Final Audit도
-PASS했다. 최종 상태는 **Phase 9 COMPLETE / Phase 10 READY TO START**이며 Phase 10 구현은 아직
-시작하지 않았다.
+PASS했다. Phase 10에서는 Phase 9 고정 모델을 사용하는 raw-video inference path, 대표 ETRI 기능
+검증, Experiment D fold 0~4를 이용한 239개 participant-disjoint raw-video OOF 평가, cache/raw
+consistency 비교와 CUDA self-recorded 기능 검증을 완료했다. Pilot Final Evaluation 작성과 Independent
+Final Audit의 유일한 required fix까지 반영되어 최종 상태는 **Phase 10 COMPLETE / 1st Pilot
+COMPLETE**다. 이는 Baseline의 1차 Pilot 절차 완료를 뜻하며 production 성능 달성을 뜻하지 않는다.
 
 현재 위치:
 
@@ -76,7 +79,9 @@ Structure Selection         완료
 ↓
 Pilot deployment/check model 완료
 ↓
-Pipeline Integration         ← 다음 (READY TO START)
+Pipeline Integration         완료
+↓
+1st Pilot                    완료
 ```
 
 ---
@@ -329,7 +334,8 @@ Selected structure: Experiment D / AI-Hub fine-tuned Encoder / GRU + Linear
 Selection artifact: configs/phase8_selected_model.yaml
 Result document: docs/05_Phase8_Structure_Selection_Result.md
 Phase 9: COMPLETE
-Phase 10: READY TO START (implementation NOT STARTED)
+Phase 10: COMPLETE
+1st Pilot: COMPLETE
 ```
 
 Phase 9 최종 결과:
@@ -356,7 +362,81 @@ Regression: 104/104 PASS
 ```
 
 Phase 9의 `training_diagnostic_loss`와 `training_diagnostic_macro_f1`은 학습 진단 전용이다.
-공식 Pilot 정량 성능은 Phase 8에서 확정한 ETRI participant-disjoint 5-fold CV 결과를 유지한다.
+Phase 8 구조 선택 근거는 cached-embedding participant-disjoint 5-fold CV이며, 최종 Pilot 정량평가는
+아래 Phase 10 raw-video OOF End-to-End 결과다.
+
+Phase 10 / 1차 Pilot 최종 결과:
+
+```text
+Official evaluation: ETRI Batch B Fixed Pilot participant-disjoint 5-fold
+                     raw-video OOF End-to-End evaluation
+Experiment: D / AI-Hub fine-tuned frozen Encoder B + GRU
+Samples: expected 239 / evaluated 239 / failed 0 / duplicate 0 / missing 0
+Participants/folds: 30 / fold 0~4 / participant leakage 0
+Class: 복약 59 / 음수 60 / 기타 120
+Aggregate OOF Macro-F1: 0.538337
+Accuracy / Macro Precision / Macro Recall: 0.623431 / 0.604227 / 0.529755
+5-fold Macro-F1 mean ± population std: 0.532176 ± 0.054575
+Class Recall: 복약 0.355932 / 음수 0.333333 / 기타 0.900000
+Raw OOF device: CPU
+ROI: success 0 / partial 15,178 / fallback 118 / total 15,296
+```
+
+Aggregate confusion matrix(GT rows × prediction columns, 복약/음수/기타 순서):
+
+```text
+[[ 21,  8,  30],
+ [  9, 20,  31],
+ [  7,  5, 108]]
+```
+
+핵심 error pattern은 복약 30개와 음수 31개가 기타로 분류된 것이다. Aggregate OOF Macro-F1은
+239개 prediction을 합쳐 계산한 값이고, `0.532176 ± 0.054575`는 fold별 Macro-F1의 mean ± std라서
+서로 다른 통계량이다.
+
+Raw-vs-cached consistency:
+
+```text
+sample set exact match: true
+prediction agreement: 239/239 (100%)
+metric/confusion matrix equality: true
+probability max absolute difference: 1.2516975402832031e-6
+probability mean absolute difference: 2.700056116950063e-7
+stored verdict: DIFFERENCE_OBSERVED
+```
+
+Prediction과 metric은 일치하지만 probability 차이가 configured tolerance를 초과했으므로 artifact의
+`DIFFERENCE_OBSERVED` 판정을 사후 변경하지 않는다.
+
+Self-recorded functional/qualitative check:
+
+```text
+Videos: 3
+Model: Phase 9 deployment/check model
+Device: CUDA
+Functional result: 3/3 PASS
+Medication intended → 기타
+Drinking intended → 기타
+Other intended → 기타
+```
+
+세 영상 모두 raw video부터 label/confidence까지 전체 pipeline이 crash 없이 동작했다. 이 결과는
+classification accuracy나 공식 test metric이 아니다.
+
+Independent Phase 10 Final Audit 이력:
+
+```text
+Initial verdict: PASS WITH REQUIRED FIXES
+BLOCKER: 0
+REQUIRED BEFORE COMPLETION: 1
+Required fix: Final Evaluation의 AI-Hub actor population 표현 구분
+Resolution: selected 400 video = 192 actors (152/40, overlap 0),
+            candidate-pool split population = 202 actors (162/40)로 수정 완료
+Completion requirements: satisfied
+```
+
+기타 audit warning은 non-blocking이며 Phase 10/Pilot 핵심 implementation, evaluation, artifact와 test는
+PASS했다.
 
 Phase 7 정식 5-fold 결과:
 
@@ -415,7 +495,8 @@ Phase 2 ETRI 구현 완료 항목:
 Phase 3 Fixed Pilot Manifest 완료 항목:
 
 - [x] selection/split/fold config 및 seed 외부화
-- [x] AI-Hub 202 actor의 train 162 / val 40 actor-disjoint split 확정
+- [x] 전체 candidate pool 202 actor의 train-split 162 / validation-split 40 actor-disjoint split 확정
+- [x] selected Pilot 400 video의 distinct actor 192명 (train 152 / validation 40 / overlap 0) 확인
 - [x] AI-Hub Pilot 400 video / 1,200 frame 선택 (복약 100, 음수 100, 기타 200)
 - [x] AI-Hub Eat_food hard negative 50 video 포함
 - [x] ETRI 30 participant의 participant-disjoint 5-fold 확정 (fold별 6명)
@@ -477,14 +558,10 @@ Phase 3 Fixed Pilot Manifest 완료 항목:
 
 ## 6. 다음 작업
 
-다음 작업:
-
-```text
-Phase 10 — Pipeline Integration
-```
-
-예정 범위: ETRI inference script check, raw video → sampling → ROI → frozen Encoder B → GRU
-연결, `self_recorded/pipeline_check`의 기능적·정성적 검증이다. Phase 10 구현은 아직 시작하지 않았다.
+Phase 10과 1차 Pilot은 완료됐다. 새로운 Phase를 시작한 상태는 아니며, 다음 방향은 Final Evaluation에
+기록된 **Full Experiment / Post-Pilot planning**이다. 후보는 larger/full dataset experiment,
+independent test protocol, ETRI encoder adaptation, class imbalance와 target Recall 개선, ROI 개선,
+external/cross-batch evaluation이다.
 
 Phase 7 최종 상태:
 
@@ -532,7 +609,7 @@ Phase 7 현재 작업:
 - [x] Post-run Independent Final Audit (`PASS_WITH_WARNINGS`)
 - [x] Phase 7 COMPLETE
 
-Phase 8 / Phase 9 완료 항목:
+Phase 8 / Phase 9 / Phase 10 완료 항목:
 
 - [x] A/B/C/D 각각 intended 5-fold evidence completeness 검증
 - [x] participant-disjoint 및 OOF 239개 exact-once 검증
@@ -557,7 +634,17 @@ Phase 8 / Phase 9 완료 항목:
 - [x] Phase 9 Independent Final Audit PASS (BLOCKER/HIGH/MEDIUM 없음)
 - [x] full regression 104/104 PASS
 - [x] Phase 9 COMPLETE
-- [ ] Phase 10 Pipeline Integration (NOT STARTED)
+- [x] Phase 10 fixed Phase 9 raw-video inference pipeline 구현
+- [x] representative ETRI raw-video functional check
+- [x] Experiment D fold 0~4 기반 239개 raw-video OOF End-to-End 평가
+- [x] OOF prediction / metrics / confusion matrix 및 ROI statistics artifact 생성
+- [x] raw-vs-cached OOF consistency 비교
+- [x] Phase 9 deployment/check model 기반 self-recorded 3-class CUDA pipeline check
+- [x] `docs/06_Pilot_Final_Evaluation.md` 작성
+- [x] Independent Phase 10 Final Audit 및 required fix 반영 완료
+- [x] Phase 10 포함 full regression 113/113 PASS
+- [x] Phase 10 COMPLETE
+- [x] 1st Pilot COMPLETE
 
 ---
 
@@ -584,7 +671,9 @@ Phase 8  구조 선택                  완료
 ↓
 Phase 9  Pilot deployment/check model  완료
 ↓
-Phase 10 Pipeline Integration           다음 (READY TO START)
+Phase 10 Pipeline Integration           완료
+↓
+1st Pilot                               완료
 ```
 
 ---
@@ -644,6 +733,22 @@ Phase 7 warning / limitation:
 8. Phase 7에서는 winner를 결정하지 않았으며, Phase 8에서 고정 정책으로 Experiment D를 선택했다.
 ```
 
+Phase 10 / 1차 Pilot 최종 limitation:
+
+```text
+1. untouched independent final test가 없다.
+2. 복약/음수 Recall이 각각 0.355932 / 0.333333으로 낮다.
+3. 결과는 ETRI Batch B의 239개 Fixed Pilot subset에 한정된다.
+4. ETRI에서 visual encoder는 frozen이며 domain adaptation을 수행하지 않았다.
+5. 15,296 sampled frame 중 15,178 frame이 ROI partial path였다.
+6. external/cross-batch generalization을 평가하지 않았다.
+7. self-recorded 결과는 3개 영상의 functional/qualitative check일 뿐이다.
+8. Phase 9 single deployment/check model에 대한 independent test 성능은 없다.
+```
+
+**1st Pilot COMPLETE**는 모델이 production 성능을 달성했다는 뜻이 아니라, Baseline에서 정의한
+1차 Pilot 구현·평가·검증 절차를 완료했다는 뜻이다.
+
 새로운 blocker, 검증 실패, 설계 변경 필요성이 발생하면 이 섹션을 즉시 갱신한다.
 
 ---
@@ -666,6 +771,12 @@ docs/01_개발환경_구축_기록.md
 
 ```text
 docs/03_Model_Implementation_References.md
+```
+
+1차 Pilot 최종 평가:
+
+```text
+docs/06_Pilot_Final_Evaluation.md
 ```
 
 Coding Agent 작업 규칙:
