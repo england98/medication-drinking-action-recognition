@@ -205,12 +205,14 @@ Aggregate OOF Macro-F1은 239개 prediction을 합쳐 계산한 값이고, fold 
 
 | 문서 | 역할 |
 |---|---|
-| [`docs/00_Pilot_Design_Baseline.md`](docs/00_Pilot_Design_Baseline.md) | Pilot의 상위 설계·데이터·평가 기준 |
-| [`docs/01_개발환경_구축_기록.md`](docs/01_개발환경_구축_기록.md) | WSL, Python, GPU, 경로와 환경 기록 |
-| [`docs/03_Model_Implementation_References.md`](docs/03_Model_Implementation_References.md) | 모델 구현 공식 API와 외부 Reference 범위 |
-| [`docs/05_Phase8_Structure_Selection_Result.md`](docs/05_Phase8_Structure_Selection_Result.md) | 2×2 ablation과 Experiment D 선택 근거 |
-| [`docs/06_Pilot_Final_Evaluation.md`](docs/06_Pilot_Final_Evaluation.md) | 최종 평가, 오류 분석, limitation과 해석 경계 |
-| [`AGENTS.md`](AGENTS.md) | Coding Agent의 작업 권한과 절차 |
-| [`STATUS.md`](STATUS.md) | 상세 개발 이력, 현재 상태와 다음 작업 |
+| [`docs/00_Pilot_Design_Baseline.md`](docs/00_Pilot_Design_Baseline.md) | 1차 Pilot의 상위 설계·데이터·학습·평가 기준 |
+| [`docs/07_Pilot_Development_Record.md`](docs/07_Pilot_Development_Record.md) | Phase 0~10의 실제 개발·실험·검증 lifecycle과 주요 evidence 기록 |
+| [`docs/08_Pilot Retrospective & Roadmap.md`](<docs/08_Pilot Retrospective & Roadmap.md>) | 1차 Pilot 회고, 핵심 한계와 Post-Pilot 발전·고도화 방향 |
+| [`docs/06_Pilot_Final_Evaluation.md`](docs/06_Pilot_Final_Evaluation.md) | 공식 정량 평가, 오류 분석, limitation과 결과 해석 경계 |
+| [`docs/05_Phase8_Structure_Selection_Result.md`](docs/05_Phase8_Structure_Selection_Result.md) | 2×2 ablation 재집계와 Experiment D 선택 근거 |
+| [`docs/01_개발환경_구축_기록.md`](docs/01_개발환경_구축_기록.md) | WSL, Python, GPU, 경로와 개발환경 기준 기록 |
+| [`docs/03_Model_Implementation_References.md`](docs/03_Model_Implementation_References.md) | 모델·학습·평가·inference 구현 시 공식 API와 외부 Reference 사용 기준 |
+| [`AGENTS.md`](AGENTS.md) | Coding Agent의 작업 권한, 제약과 작업 절차 |
+| [`STATUS.md`](STATUS.md) | Phase별 진행 상태와 현재 프로젝트 상태의 Single Source of Truth |
 
-`README.md`는 완료된 프로젝트의 안정적인 overview를, `STATUS.md`는 상세 진행 상태의 Single Source of Truth를 담당합니다.
+`README.md`는 완료된 프로젝트의 안정적인 overview를, `STATUS.md`는 현재 진행 상태의 Single Source of Truth를 담당합니다.
