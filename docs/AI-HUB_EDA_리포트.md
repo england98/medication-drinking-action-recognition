@@ -1,9 +1,10 @@
 # EDA 리포트 — 복약 / 음료 / 기타 3-클래스 행동 분류
 
 - **목표 모델**: 영상(또는 프레임)이 **① 복약 행동(약을 먹는다) / ② 물·음료 마시는 행동 / ③ 기타 그 외 행동** 중 무엇인지 분류
-- **데이터**: `057.일상생활 영상 데이터` 로컬본 (`01.데이터/1.Training`, `01.데이터/2.Validation`). 구조 설명은 [`../데이터_구조_안내.md`](../데이터_구조_안내.md) 참조
+- **데이터**: `057.일상생활 영상 데이터` 로컬본 (`01.데이터/1.Training`, `01.데이터/2.Validation`). 구조 설명은 [AI-HUB 데이터 구조 안내](AI-HUB_데이터_구조_안내.md) 참조
 - **분석 대상**: 라벨링데이터 전체 JSON **18,420건**(프레임 JPG 55,260장, bbox 55,558개). 원본 mp4·CSV 텍스트는 로컬에 없음
-- 재현 스크립트: [`scripts/`](scripts/) · 집계 산출물: [`outputs/`](outputs/) · 그림: [`figures/`](figures/) · 샘플 프레임: [`sample_frames/`](sample_frames/)
+- 재현 스크립트: `scripts/` · 집계 산출물: `outputs/` · 그림: `figures/` · 샘플 프레임: `sample_frames/`
+- 원본 EDA의 상세 CSV/TXT, 분석 scripts, sample frames는 데이터셋과 함께 로컬 EDA 작업 폴더에 보관하며, repository에는 문서 이해에 필요한 핵심 aggregate figure만 `docs/assets/eda/ai_hub/`에 포함한다.
 
 > **클래스 매핑 주의**: 데이터셋에는 "물 마시기"만 떼어낸 클래스가 없습니다. 폴더명 번호 **2 = "음료를 마신다"(Drink_bever)** 를 "물·음료 마시기"의 프록시로 사용했습니다. 폴더명 번호 **3 = "약을 먹는다"(Take_pills)** 가 복약입니다. 그 외 103개 클래스는 전부 "기타"로 묶었습니다.
 
@@ -15,7 +16,7 @@
 |---|---|---|
 | 1 | **극심한 클래스 불균형** — 복약 111건(0.60%), 음료 118건(0.64%), 기타 18,191건(98.76%). 기타:복약 ≈ **164:1** | 클래스 가중치 / 포컬로스 / 기타 언더샘플링 필수. 절대량이 작아 k-fold CV·강한 증강·사전학습 백본 권장 |
 | 2 | **복약·음료는 `viewpoint_3`(3인칭 고정)만 존재**. 1인칭 데이터 0건. 기타는 1인칭 7,432 + 3인칭 10,759 | 기타도 **viewpoint_3만** 사용해야 도메인 일치. 1인칭을 섞으면 모델이 "행동"이 아니라 "시점"을 학습 |
-| 3 | **인접 행동이 시각적으로 거의 동일** — 5 "술을 마신다"(107건)는 음료와 마시는 동작이 같고, 1 "음식을 먹는다"(110건)는 손-입 동작이 복약과 유사 ([`figures/10_sample_contact_sheet.png`](figures/10_sample_contact_sheet.png)) | 이 두 클래스를 **하드 네거티브로 반드시 포함**. "술"을 음료에 병합할지("마시기" 225건) 정책 결정 필요 |
+| 3 | **인접 행동이 시각적으로 거의 동일** — 5 "술을 마신다"(107건)는 음료와 마시는 동작이 같고, 1 "음식을 먹는다"(110건)는 손-입 동작이 복약과 유사 (원본 EDA 작업 폴더의 `figures/10_sample_contact_sheet.png`) | 이 두 클래스를 **하드 네거티브로 반드시 포함**. "술"을 음료에 병합할지("마시기" 225건) 정책 결정 필요 |
 | 4 | **bbox 객체 라벨이 강한 판별 신호** — 음료: `음료잔`/`음료캔·병`(3종), 복약: `알약`/`약봉지`(3종). 기타에만 `전신` 라벨 1,836개 | 제공된 bbox 크롭 또는 객체 탐지기를 2차 신호로 활용 가능. 단 프레임당 bbox 1개뿐 |
 | 5 | **행동 구간(timeline)이 타깃은 매우 짧음** — 복약 중앙값 18초, 음료 12초, 기타 46초. 영상 총길이는 세 그룹 모두 ≈21분으로 동일 | 원본 영상 확보 시 구간 중앙에서 프레임 샘플. 현재는 영상당 3프레임만 제공(구간 내 넓게 분산 샘플됨) |
 | 6 | **피험자·배경 누수 위험** — 복약/음료 피험자 152명 전원이 "기타" 행동으로도 촬영됨. 같은 3인칭 고정카메라 = 같은 방·인물이 타깃/기타 양쪽에 노출 | `actor` 기준 분할 재구성 권장. 현행 Train/Val은 클래스 내 actor 교집합은 0이지만 인물·공간은 겹침 |
@@ -42,13 +43,13 @@
 | Training | 6,617 | 9,786 |
 | Validation | 815 | 1,202 |
 
-전체 클래스별 건수 분포·순위는 [`outputs/03_per_class_counts.csv`](outputs/03_per_class_counts.csv), [`figures/09_all_class_counts.png`](figures/09_all_class_counts.png).
+전체 클래스별 건수 분포·순위는 `outputs/03_per_class_counts.csv`, [`assets/eda/ai_hub/09_all_class_counts.png`](assets/eda/ai_hub/09_all_class_counts.png).
 
 ---
 
 ## 3. 타깃 3-클래스 분포
 
-![3-클래스 분포](figures/01_3class_distribution.png)
+![3-클래스 분포](assets/eda/ai_hub/01_3class_distribution.png)
 
 | 클래스 | Training | Validation | 합계 | 프레임 | 비율 | 기타 대비 |
 |---|--:|--:|--:|--:|--:|--:|
@@ -61,7 +62,7 @@
 
 ### 3-1. viewpoint 편중 (도메인 일치)
 
-![viewpoint 구성](figures/03_viewpoint_composition.png)
+![viewpoint 구성](assets/eda/ai_hub/03_viewpoint_composition.png)
 
 | target_label | viewpoint_1 | viewpoint_3 |
 |---|--:|--:|
@@ -75,7 +76,7 @@
 
 ## 4. 인접·혼동 클래스 (먹기·마시기 계열)
 
-![인접 클래스](figures/02_near_classes.png) · 표: [`outputs/04_near_classes.csv`](outputs/04_near_classes.csv)
+![인접 클래스](assets/eda/ai_hub/02_near_classes.png) · 표: `outputs/04_near_classes.csv`
 
 | 폴더# | 행위 | Training | Validation | 합계 | 이 EDA에서의 취급 |
 |--:|---|--:|--:|--:|---|
@@ -84,7 +85,7 @@
 | 3 | 약을 먹는다 | 99 | 12 | 111 | **복약(양성)** |
 | 5 | 술을 마신다 | 95 | 12 | 107 | 기타(**하드 네거티브** — 마시는 동작이 음료와 사실상 동일) |
 
-[`figures/10_sample_contact_sheet.png`](figures/10_sample_contact_sheet.png) 에서 육안 확인:
+원본 EDA 작업 폴더의 `figures/10_sample_contact_sheet.png`에서 육안 확인:
 - 술(5) 프레임: 유리잔·머그로 마시는 장면 → 음료(2)와 구분 단서가 **음료 종류(맥주캔 등)** 뿐.
 - 음식(1) 프레임: 젓가락/포크로 입에 가져감 → 복약(3)의 "손으로 알약을 입에" 동작과 형태 유사. 구분 단서는 **알약/약봉지 존재 여부**.
 
@@ -94,7 +95,7 @@
 
 ## 5. 인구통계 · 촬영 조건
 
-![인구통계](figures/07_demographics.png) · 전체 수치: [`outputs/05_demographics_pct.csv`](outputs/05_demographics_pct.csv), [`outputs/06_region_by_class.csv`](outputs/06_region_by_class.csv)
+![인구통계](assets/eda/ai_hub/07_demographics.png) · 전체 수치: `outputs/05_demographics_pct.csv`, `outputs/06_region_by_class.csv`
 
 각 셀 = **해당 클래스 내 비율(%)**. (기타는 viewpoint_3 한정)
 
@@ -109,13 +110,13 @@
 | 신장(cm) | min150 / 평균167 | min140 / 평균166 | — | `150`은 기본값 의심(9장 참조) |
 
 - **지역**: 복약·음료가 소수라 17개 시·도에 2~15건씩 흩어짐(Gyeonggi 최다 13.5%, Jeju 1.8%). 지역 층화는 사실상 불가 → 지역은 성능 슬라이스 정도로만.
-- 직업(`job`)은 코드값 + 한글 자유기입 혼재 → 피처로 쓰기 부적합. [`outputs/07_job_by_target.csv`](outputs/07_job_by_target.csv)
+- 직업(`job`)은 코드값 + 한글 자유기입 혼재 → 피처로 쓰기 부적합. `outputs/07_job_by_target.csv`
 
 ---
 
 ## 6. 영상 길이 · 행동 구간
 
-![길이 분포](figures/04_length_distributions.png) · 표: [`outputs/08_length_stats.csv`](outputs/08_length_stats.csv)
+![길이 분포](assets/eda/ai_hub/04_length_distributions.png) · 표: `outputs/08_length_stats.csv`
 
 | target_label | video_length 중앙값(초) | timeline 구간 길이 중앙값(초) | 구간 길이 평균 |
 |---|--:|--:|--:|
@@ -132,19 +133,19 @@
 
 ### 7-1. obj_name (bbox가 가리키는 객체)
 
-![타깃 obj_name](figures/05_objname_targets.png) · CSV: [`outputs/09_objname_cls02_음료.csv`](outputs/09_objname_cls02_음료.csv), [`outputs/09_objname_cls03_복약.csv`](outputs/09_objname_cls03_복약.csv)
+![타깃 obj_name](assets/eda/ai_hub/05_objname_targets.png) · CSV: `outputs/09_objname_cls02_음료.csv`, `outputs/09_objname_cls03_복약.csv`
 
 | 음료 (cat 2, bbox 354개, 3종) | 복약 (cat 3, bbox 333개, 3종) |
 |---|---|
 | 음료잔 232 / 음료캔·음료병 75 / (둘 다) 47 | 알약,약봉지 191 / 약봉지 86 / 알약 56 |
 
 - 두 클래스 모두 **객체 어휘가 3종으로 매우 깔끔** → "알약/약봉지" vs "잔/캔/병"은 강력한 판별 단서.
-- 기타 상위 obj_name: `옷`, `전신`, `바늘,천`, `카드/화투`, `공,손` … (top30: [`outputs/09_objname_기타_top30.csv`](outputs/09_objname_기타_top30.csv))
+- 기타 상위 obj_name: `옷`, `전신`, `바늘,천`, `카드/화투`, `공,손` … (top30: `outputs/09_objname_기타_top30.csv`)
 - **`전신`(사람 전체) bbox: 복약 0 / 음료 0 / 기타 1,836** — 3인칭 전신 라벨은 기타에만 존재.
 
 ### 7-2. bbox 기하
 
-![bbox 기하](figures/06_bbox_geometry.png) · 표: [`outputs/10_bbox_geometry.csv`](outputs/10_bbox_geometry.csv)
+![bbox 기하](assets/eda/ai_hub/06_bbox_geometry.png) · 표: `outputs/10_bbox_geometry.csv`
 
 | target_label | 면적/프레임 (평균) | 면적/프레임 (중앙값) | 중심 x | 중심 y | 폭×높이(px) | 프레임 전체 bbox 비율 |
 |---|--:|--:|--:|--:|--:|--:|
@@ -163,7 +164,7 @@
 - `n_images` = 모든 영상에서 정확히 **3**.
 - 프레임 인덱스(원본 영상 내 위치) 최대값: 중앙값 157, 최대 481. 3장의 인덱스 spread 중앙값 96 → **구간 시작/중간/끝 근처로 흩어져** 샘플된 것으로 보임(연속 3프레임 아님).
 - 따라서 "짧은 클립"보다는 **서로 떨어진 3장(멀티뷰/멀티프레임) 입력**에 가까움. 3D-CNN보다 프레임별 2D-CNN + 시간 풀링/어텐션이 현실적.
-- 상세: [`outputs/11_frame_index_spread.csv`](outputs/11_frame_index_spread.csv)
+- 상세: `outputs/11_frame_index_spread.csv`
 
 ---
 
@@ -173,11 +174,11 @@
 |---|---|---|
 | `video_date` 비정상 | 2021년이 아닌 값 **12건**(`0021-08-04`, `2121-11-08` 등 연도 오타) | — |
 | `height` 기본값 의심 | `150` 이 전체 **566건**(복약 2, 음료 4). 최소 140~최대 187 | — |
-| `job` 자유기입 | 비표준 한글 값 10종·996건(`강사`, `작가`, `6급공무원합격후발령대기중` 등) | [`outputs/07_job_by_target.csv`](outputs/07_job_by_target.csv) |
+| `job` 자유기입 | 비표준 한글 값 10종·996건(`강사`, `작가`, `6급공무원합격후발령대기중` 등) | `outputs/07_job_by_target.csv` |
 | `explan` | 중앙값 15자, 24%가 10자 미만("약을먹었습니다" 수준) — 텍스트 피처로는 빈약 | — |
-| `categories.name` 혼재 | 폴더 63·101번에서 영문명 2종(타깃 클래스 아님) | [`outputs/scan_log.txt`](outputs/scan_log.txt) |
-| 결측치 | 주요 컬럼(actor/gender/age/region/place/length/timeline) **0건** | [`outputs/12_missing_values.csv`](outputs/12_missing_values.csv) |
-| 파일 무결성 | JSON 파싱오류 0, 프레임 해상도 전량 1920×1080 | [`outputs/scan_log.txt`](outputs/scan_log.txt) |
+| `categories.name` 혼재 | 폴더 63·101번에서 영문명 2종(타깃 클래스 아님) | `outputs/scan_log.txt` |
+| 결측치 | 주요 컬럼(actor/gender/age/region/place/length/timeline) **0건** | `outputs/12_missing_values.csv` |
+| 파일 무결성 | JSON 파싱오류 0, 프레임 해상도 전량 1920×1080 | `outputs/scan_log.txt` |
 
 → 메타 필드는 클렌징(날짜 12건 보정/제외, height 150 의심치 결측 처리) 후 사용. 이미지·라벨 본체는 정상.
 
@@ -185,7 +186,7 @@
 
 ## 10. Train/Val 분할 & 누수 점검
 
-표: [`outputs/13_split_leakage.csv`](outputs/13_split_leakage.csv)
+표: `outputs/13_split_leakage.csv`
 
 | 점검 | 결과 |
 |---|---|
@@ -256,4 +257,4 @@ python 02_eda.py               # 집계 표 → outputs/*.csv, outputs/eda_summa
 python 03_figures.py           # → figures/01~09
 python 04_sample_frames.py     # → sample_frames/*, figures/10
 ```
-의존: `python 3.12`, `pandas`, `numpy`, `matplotlib`, `openpyxl`. 경로·클래스 정의는 [`scripts/common.py`](scripts/common.py) 참조.
+의존: `python 3.12`, `pandas`, `numpy`, `matplotlib`, `openpyxl`. 경로·클래스 정의는 로컬 EDA 작업 폴더의 `scripts/common.py` 참조.

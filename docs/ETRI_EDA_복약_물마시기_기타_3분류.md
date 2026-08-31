@@ -1,9 +1,10 @@
 # EDA — 복약 / 물 마시기 / 기타 3-클래스 분류용
 
 > 대상 데이터: 현재 작업 폴더의 **ETRI-Activity3D-LivingLab** 전체(zip 내부 포함, 클립 8,622개)
-> 참고 문서: [데이터셋_구조_정리.md](../docs/데이터셋_구조_정리.md)
+> 참고 문서: [ETRI 데이터셋 구조 정리](ETRI_데이터셋_구조_정리.md)
 > 타깃 정의: **복약 = `A003`(약 먹기)**, **물 마시기 = `A004`(물 마시기)**, **기타 = 나머지 53개 행동(`A001`,`A002`,`A005`~`A055`)**
 > 산출물: 이 폴더(`EDA_복약_물마시기_분류/`) — 그림(`fig/`), 표 CSV(`tables/`), 분석 스크립트(`scripts/`)
+> 원본 EDA의 상세 CSV tables와 분석 scripts는 데이터셋과 함께 로컬 EDA 작업 폴더에 보관하며, repository에는 문서 이해에 필요한 핵심 aggregate figure만 `docs/assets/eda/etri/`에 포함한다.
 >
 > ※ 프레임 수 = Body Index PNG 장수(= 스켈레톤 행 수, 실제 캡처 프레임). 시간 환산은 30 fps 가정.
 
@@ -37,13 +38,13 @@
   - `RGB Videos/P11/…/A000_P001_A000_C00l.mp4`, `A001_P001_A001_C00l.mp4` — 파일명 규칙 위반, Body Index 없음(1개는 스켈레톤도 없음)
   - Body Index 미매칭 3클립 / 스켈레톤 미매칭 1클립
 
-> 파생 인벤토리: [clip_inventory.csv](tables/clip_inventory.csv) — 클립별 batch/participant/action/height/take/프레임수/스켈레톤행수/RGB바이트/타깃라벨
+> 파생 인벤토리: `clip_inventory.csv` — 클립별 batch/participant/action/height/take/프레임수/스켈레톤행수/RGB바이트/타깃라벨
 
 ---
 
 ## 2. 클래스 분포 & 불균형
 
-![클래스 균형](fig/01_class_balance.png)
+![클래스 균형](assets/eda/etri/01_class_balance.png)
 
 | 클래스 | 클립 수 | 비율 | 배치 A | 배치 B |
 |---|---|---|---|---|
@@ -65,7 +66,7 @@
 
 ## 3. 참가자 분포 & 데이터 분할 전략
 
-![참가자별 타깃 클립](fig/05_per_participant_targets.png)
+![참가자별 타깃 클립](assets/eda/etri/05_per_participant_targets.png)
 
 | 참가자 그룹 | 인원 | 참가자당 복약 | 참가자당 물마시기 | 비고 |
 |---|---|---|---|---|
@@ -106,7 +107,7 @@
 
 ## 5. 클립 길이 분포 (모델 입력 설계)
 
-![클립 길이](fig/02_clip_length.png)
+![클립 길이](assets/eda/etri/02_clip_length.png)
 
 | 클래스 | n | min | p5 | p25 | 중앙값 | p75 | p95 | max | 평균 |
 |---|---|---|---|---|---|---|---|---|---|
@@ -157,9 +158,9 @@
 
 표본: 복약·물마시기 전수 + '기타' 무작위 700클립. 특징은 3D 관절로 계산한 간단 운동학 지표.
 (`손-머리 거리` = 좌우 손 중 머리(joint4)에 가까운 쪽까지의 유클리드 거리, m. `입 근처` = ≤ 0.22 m)
-표본 특징표: [skel_features_sample.csv](tables/skel_features_sample.csv)
+표본 특징표: `skel_features_sample.csv`
 
-![분리도 산점도](fig/03_separability.png)
+![분리도 산점도](assets/eda/etri/03_separability.png)
 
 ### 8-1. 복약 vs 물마시기
 
@@ -185,8 +186,8 @@
 
 ### 8-3. 혼동 위험 행동 (행동별 '손이 입 근처' 비율, 배치 B 표본)
 
-![행동별 손-입 근접도](fig/04_per_action_handmouth.png)
-전체 표: [per_action_handmouth.csv](tables/per_action_handmouth.csv)
+![행동별 손-입 근접도](assets/eda/etri/04_per_action_handmouth.png)
+전체 표: `per_action_handmouth.csv`
 
 | 순위 | 행동 | '손이 입 근처' 비율 | 물마시기와의 관계 |
 |---|---|---|---|
@@ -232,10 +233,10 @@
 
 | 파일 | 내용 |
 |---|---|
-| [clip_inventory.csv](tables/clip_inventory.csv) | 클립 8,622개 × (batch, participant, action, height, take, session, 프레임수, 스켈레톤행수, n_persons, RGB바이트, target) |
-| [skel_features_sample.csv](tables/skel_features_sample.csv) | 타깃 전수 + 기타 700표본의 운동학 특징 |
-| [per_action_handmouth.csv](tables/per_action_handmouth.csv) | 55개 행동별 '손이 입 근처' 비율 (혼동도 랭킹) |
-| [fig/](fig/) 01–05 | 클래스 균형 / 클립 길이 / 분리도 산점도 / 행동별 손-입 근접도 / 참가자별 타깃 수 |
+| `clip_inventory.csv` | 클립 8,622개 × (batch, participant, action, height, take, session, 프레임수, 스켈레톤행수, n_persons, RGB바이트, target) |
+| `skel_features_sample.csv` | 타깃 전수 + 기타 700표본의 운동학 특징 |
+| `per_action_handmouth.csv` | 55개 행동별 '손이 입 근처' 비율 (혼동도 랭킹) |
+| `fig/` 01–05 | 클래스 균형 / 클립 길이 / 분리도 산점도 / 행동별 손-입 근접도 / 참가자별 타깃 수 |
 
-> 분석 스크립트: [scripts/](scripts/) — `eda_build.py`(인벤토리) → `eda_analyze.py`(통계) → `eda_plots.py`(그림), `eda_verify.py`(정합 검증). 실행법은 해당 폴더 `README.md` 참고.
+> 분석 스크립트: 로컬 EDA 작업 폴더의 `scripts/` — `eda_build.py`(인벤토리) → `eda_analyze.py`(통계) → `eda_plots.py`(그림), `eda_verify.py`(정합 검증). 실행법은 해당 폴더 `README.md` 참고.
 > 재현 시 주의: 배치 A는 파일명이 세션 간 중복(`A003_P001_C0li_C0li`)되므로 **클립 키를 `참가자/세션/파일명` 전체 경로로** 잡아야 함.
